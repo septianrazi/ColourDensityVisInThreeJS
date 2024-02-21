@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js webgl - buffergeometry - particles</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="container"></div>
+	<script type="x-shader/x-vertex" id="RGBVertexShader">
+		uniform sampler2D tex;
+		varying vec3 color;
+
+		void main() {
+
+			color = texture2D ( tex, position.xy ).rgb;
+
+			vec4 mvPosition = modelViewMatrix* vec4(color-vec3(.5,.5,.5), 1);
+
+			gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
+			gl_Position = projectionMatrix * mvPosition;
+
+		}
+	</script>
+
+	<script type="x-shader/x-fragment" id="RGBFragmentShader">
+		varying vec3 color;
+
+		void main() {
+			float l = length( gl_PointCoord - vec2( 0.5, 0.5 ));
+			if ( l > 0.475 ) discard;
+
+			gl_FragColor = vec4( color, 1.0 );
+		}
+	</script>
+
+	<script type="x-shader/x-vertex" id="RGBShadowVertexShader">
+		uniform sampler2D tex;
+		varying vec3 color;
+
+		void main() {
+
+			color = texture2D ( tex, position.xy ).rgb;
+			color.g = 0.0;
+
+			vec4 mvPosition = modelViewMatrix* vec4(color-vec3(.5,.5,.5), 1);
+
+			gl_PointSize = 2.0;
+			gl_Position = projectionMatrix * mvPosition;
+
+		}
+	</script>
+
+	<script type="x-shader/x-fragment" id="RGBShadowFragmentShader">
+		varying vec3 color;
+
+		void main() {
+			float l = length( gl_PointCoord - vec2( 0.5, 0.5 ));
+			if ( l > 0.475 ) discard;
+
+			vec3 newcolor = vec3(0.2,0.2,0.2);
+
+			gl_FragColor = vec4( newcolor, 0.5);
+		}
+	</script>
+
+
+
+	<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+	<script type="importmap">
+	  {
+		"imports": {
+		  "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+		  "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
+		}
+	  }
+	</script>
+
+	<script type="module">
+		import * as THREE from 'three';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { FlyControls } from 'three/addons/controls/FlyControls.js';
+		import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+		// import WEBGL from "three/addons/capabilities/WebGL.js";
+
+		import Stats from 'three/addons/libs/stats.module.js';
+
+		let container, stats;
+
+		let camera, scene, renderer, controls;
+
+		let points;
+
+		let RGBVisMesh;
+
+		var context, canvas;
+		var plan, plan_ori;
+
+		// GUI
+		var gui;
+
+		// VIDEO AND THE ASSOCIATED TEXTURE
+		var video, videoTexture;
+
+		var imageProcessing, imageProcessingMaterial;
+
+
+		init();
+		animate();
+
+		function init() {
+			// if (WEBGL.isWebGL2Available() === false) {
+			// 	document.body.appendChild(WEBGL.getWebGL2ErrorMessage());
+			// }
+			container = document.getElementById('container');
+
+			camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, .1, 50);
+			camera.position.z = 5;
+
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color(0xcccccc);
+
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			container.appendChild(renderer.domElement);
+
+			controls = new FlyControls(camera, renderer.domElement);
+			controls.dragToLook = true;
+			controls.movementSpeed = 0.1;
+
+			stats = new Stats();
+			container.appendChild(stats.dom);
+
+			const axesHelper = new THREE.AxesHelper(5);
+			scene.add(axesHelper);
+
+			const loader = new THREE.TextureLoader();
+
+			window.addEventListener('resize', onWindowResize);
+
+			function IVprocess(imageProcessing, renderer) {
+				renderer.setRenderTarget(imageProcessing.rtt);
+				renderer.render(imageProcessing.scene, imageProcessing.orthoCamera);
+				renderer.setRenderTarget(null);
+			}
+
+
+			// VIDEO AND THE ASSOCIATED TEXTURE
+			var video, videoTexture;
+
+			var imageProcessing, imageProcessingMaterial;
+
+			video = document.createElement("video");
+			video.src = "video.mp4";
+			video.load();
+			video.muted = true;
+			video.loop = true;
+
+			video.onloadeddata = function () {
+				videoTexture = new THREE.VideoTexture(video);
+				videoTexture.minFilter = THREE.NearestFilter;
+				videoTexture.magFilter = THREE.NearestFilter;
+				videoTexture.generateMipmaps = false;
+				videoTexture.format = THREE.RGBAFormat;
+
+				// VIDEO -------------
+
+				var geometry2 = new THREE.PlaneGeometry(
+					1,
+					video.videoHeight / video.videoWidth
+				);
+				var material2 = new THREE.MeshBasicMaterial({
+					map: videoTexture,
+					side: THREE.DoubleSide,
+				});
+				plan_ori = new THREE.Mesh(geometry2, material2);
+				plan_ori.position.z = -0.5;
+				plan_ori.receiveShadow = false;
+				plan_ori.castShadow = false;
+				scene.add(plan_ori);
+
+
+				// POINT CLOUD ------
+				RGBVisMesh = new THREE.Object3D();
+				var discret = 1;
+
+				var colorSpaceMaterial = new THREE.ShaderMaterial({
+					vertexShader: document.getElementById('RGBVertexShader').textContent,
+					fragmentShader: document.getElementById('RGBFragmentShader').textContent,
+					// blending: THREE.MultiplicativeBlending,
+					depthTest: true,
+					transparent: true,
+					uniforms: {
+						tex: { value: videoTexture },
+					}
+				});
+
+				const geometry = new THREE.BufferGeometry();
+				const positions = [];
+				let compteur = 0;
+				for (let i = 0; i < video.videoHeight; i += discret)
+					for (let j = 0; j < video.videoWidth; j += discret) {
+						// positions
+						const x = (i + 0.5) / video.videoHeight;
+						const y = (j + 0.5) / video.videoWidth;
+						const z = 0;
+
+						positions.push(x, y, z);
+						compteur++;
+					}
+
+				geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+				geometry.computeBoundingSphere();
+
+				points = new THREE.Points(geometry, colorSpaceMaterial);
+
+
+				RGBVisMesh.add(points);
+
+				var gridHelper = new THREE.GridHelper(1, 10);
+				gridHelper.position.y = -0.5;
+				RGBVisMesh.add(gridHelper);
+
+				var axesHelper = new THREE.AxesHelper(1);
+				axesHelper.position.set(-0.5, -0.5, -0.5)
+				RGBVisMesh.add(axesHelper);
+
+				var boundingBox = new THREE.BoxGeometry(1, 1, 1);
+				var wireframe = new THREE.EdgesGeometry(boundingBox);
+				var line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
+				line.material.depthTest = true;
+				line.material.opacity = 0.5;
+				line.material.linewidth = 10;
+				line.material.transparent = true;
+				RGBVisMesh.add(line);
+
+
+
+				var shadowSpaceMaterial = new THREE.ShaderMaterial({
+					vertexShader: document.getElementById('RGBShadowVertexShader').textContent,
+					fragmentShader: document.getElementById('RGBShadowFragmentShader').textContent,
+					blending: THREE.AdditiveBlending,
+					depthTest: true,
+					transparent: true,
+
+					uniforms: {
+						tex: { value: videoTexture },
+					}
+				});
+				{
+					const shadowGeometry = new THREE.BufferGeometry();
+					const shadowPositions = [];
+					let compteur = 0;
+					for (let i = 0; i < video.videoHeight; i += discret)
+						for (let j = 0; j < video.videoWidth; j += discret) {
+							// positions
+							const x = (i + 0.5) / video.videoHeight;
+							const y = (j + 0.5) / video.videoWidth;
+							const z = 0;
+
+							shadowPositions.push(x, y, z);
+							compteur++;
+						}
+
+					shadowGeometry.setAttribute('position', new THREE.Float32BufferAttribute(shadowPositions, 3));
+					shadowGeometry.computeBoundingSphere();
+
+					let shadowPoints = new THREE.Points(shadowGeometry, shadowSpaceMaterial);
+					RGBVisMesh.add(shadowPoints);
+				}
+
+
+				RGBVisMesh.position.x = 1;
+				scene.add(RGBVisMesh);
+
+
+
+				video.play();
+			};
+		}
+
+		function addGUI() {
+			// {//gui
+			// 	var pausePlayObj = {
+			// 		pausePlay: function () {
+			// 			if (!video.paused) {
+			// 				console.log("pause");
+			// 				video.pause();
+			// 			} else {
+			// 				console.log("play");
+			// 				video.play();
+			// 			}
+			// 		},
+			// 		add10sec: function () {
+			// 			video.currentTime = video.currentTime + 10;
+			// 			console.log(video.currentTime);
+			// 		},
+			// 	};
+
+			// 	gui = new GUI();
+			// 	gui
+			// 		.add(imageProcessingMaterial.uniforms.colorScaleR, "value", 0, 1)
+			// 		.name("Red");
+			// 	gui
+			// 		.add(imageProcessingMaterial.uniforms.colorScaleG, "value", 0, 1)
+			// 		.name("Green");
+			// 	gui
+			// 		.add(imageProcessingMaterial.uniforms.colorScaleB, "value", 0, 1)
+			// 		.name("Blue");
+			// 	gui
+			// 		.add(imageProcessingMaterial.uniforms.sizeDiv2, "value", 1, 21)
+			// 		.name("sizeDiv2");
+			// 	gui
+			// 		.add(imageProcessingMaterial.uniforms.invert, "value")
+			// 		.name("Invert");
+			// 	gui.add(pausePlayObj, "pausePlay").name("Pause/play video");
+			// 	gui.add(pausePlayObj, "add10sec").name("Add 10 seconds");
+			// }
+		}
+
+		function onWindowResize() {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		}
+
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update(0.5);
+
+			render();
+			stats.update();
+		}
+
+		function render() {
+			if (typeof imageProcessing !== "undefined")
+				IVprocess(imageProcessing, renderer);
+			renderer.render(scene, camera);
+		}
+
+
+	</script>
+
+</body>
+
+</html>
