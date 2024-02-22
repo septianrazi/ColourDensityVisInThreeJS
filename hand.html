@@ -27,7 +27,7 @@
 	<script type="module">
 
 		import * as THREE from 'three';
-		import { ARButton } from 'three/addons/webxr/ARButton.js';
+		import { XRButton } from 'three/addons/webxr/XRButton.js';
 		import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 		import { OculusHandModel } from 'three/addons/webxr/OculusHandModel.js';
 		import { OculusHandPointerModel } from 'three/addons/webxr/OculusHandPointerModel.js';
@@ -423,7 +423,7 @@
 
 			container.appendChild(renderer.domElement);
 
-			document.body.appendChild(ARButton.createButton(renderer));
+			document.body.appendChild(XRButton.createButton(renderer));
 
 			// controllers
 			const controller1 = renderer.xr.getController(0);

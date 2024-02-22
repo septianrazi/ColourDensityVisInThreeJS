@@ -467,7 +467,7 @@
 		import Stats from 'three/addons/libs/stats.module.js';
 
 		// AR 
-		import { ARButton } from 'three/addons/webxr/ARButton.js';
+		import { XRButton } from 'three/addons/webxr/XRButton.js';
 		import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 		import { OculusHandModel } from 'three/addons/webxr/OculusHandModel.js';
 		import { OculusHandPointerModel } from 'three/addons/webxr/OculusHandPointerModel.js';
@@ -878,7 +878,7 @@
 			window.addEventListener('resize', onWindowResize);
 
 			// VR AR Content
-			document.body.appendChild(ARButton.createButton(renderer));
+			document.body.appendChild(XRButton.createButton(renderer));
 			renderer.xr.enabled = true;
 			renderer.xr.cameraAutoUpdate = false;
 
@@ -900,7 +900,6 @@
 			hand1.add(new OculusHandModel(hand1));
 			const handPointer1 = new OculusHandPointerModel(hand1, controller1);
 			hand1.add(handPointer1);
-
 			scene.add(hand1);
 
 			// Hand 2
