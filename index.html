@@ -969,7 +969,7 @@
 					side: THREE.DoubleSide,
 				});
 				plan_ori = new THREE.Mesh(geometry2, material2);
-				plan_ori.position.z = -0.5;
+				plan_ori.position.z = -2.5;
 				plan_ori.receiveShadow = false;
 				plan_ori.castShadow = false;
 				scene.add(plan_ori);
@@ -1045,192 +1045,44 @@
 
 				RGBVisMesh.position.x = 1;
 				RGBVisMesh.position.y = -0.5;
+				RGBVisMesh.position.z = -2.0
 				scene.add(RGBVisMesh);
 
-				{
-					let RGBDensityVisMesh = new THREE.Object3D();
+				// {
+				// 	let RGBDensityVisMesh = new THREE.Object3D();
 
-					var colourDensitySpaceMaterial = new THREE.ShaderMaterial({
-						vertexShader: document.getElementById('RGBDensityVertexShader').textContent,
-						fragmentShader: document.getElementById('RGBDensityFragmentShader').textContent,
-						// blending: THREE.AdditiveBlending,
-						depthTest: true,
-						transparent: true,
+				// 	var colourDensitySpaceMaterial = new THREE.ShaderMaterial({
+				// 		vertexShader: document.getElementById('RGBDensityVertexShader').textContent,
+				// 		fragmentShader: document.getElementById('RGBDensityFragmentShader').textContent,
+				// 		// blending: THREE.AdditiveBlending,
+				// 		depthTest: true,
+				// 		transparent: true,
 
-						uniforms: {
-							tex: { value: videoTexture },
-						}
-					});
-					let pointsDensity = new THREE.Points(geometry, colourDensitySpaceMaterial);
-					RGBDensityVisMesh.add(pointsDensity);
-					let shadowPoints2 = shadowPoints.clone();
-					RGBDensityVisMesh.add(shadowPoints2);
+				// 		uniforms: {
+				// 			tex: { value: videoTexture },
+				// 		}
+				// 	});
+				// 	let pointsDensity = new THREE.Points(geometry, colourDensitySpaceMaterial);
+				// 	RGBDensityVisMesh.add(pointsDensity);
+				// 	let shadowPoints2 = shadowPoints.clone();
+				// 	RGBDensityVisMesh.add(shadowPoints2);
 
-					RGBDensityVisMesh.add(gridHelper.clone());
-					RGBDensityVisMesh.add(axesHelper.clone());
-					RGBDensityVisMesh.add(line.clone());
+				// 	RGBDensityVisMesh.add(gridHelper.clone());
+				// 	RGBDensityVisMesh.add(axesHelper.clone());
+				// 	RGBDensityVisMesh.add(line.clone());
 
-					RGBDensityVisMesh.position.x = -1;
-					RGBDensityVisMesh.position.y = -0.5;
+				// 	RGBDensityVisMesh.position.x = -1;
+				// 	RGBDensityVisMesh.position.y = -0.5;
 
-					scene.add(RGBDensityVisMesh);
-				}
-
-				{
-					let CIExyYVisMesh = new THREE.Object3D();
-
-					var CIExyYSpaceMaterial = new THREE.ShaderMaterial({
-						vertexShader: document.getElementById('CIExyYVertexShader').textContent,
-						fragmentShader: document.getElementById('CIExyYFragmentShader').textContent,
-						// blending: THREE.AdditiveBlending,
-						depthTest: true,
-						transparent: true,
-
-						uniforms: {
-							tex: { value: videoTexture },
-						}
-					});
-
-					let pointsCIExyY = new THREE.Points(geometry, CIExyYSpaceMaterial);
-					CIExyYVisMesh.add(pointsCIExyY);
-
-
-					var shadowSpaceMaterial2 = new THREE.ShaderMaterial({
-						vertexShader: document.getElementById('CIExyYShadowVertexShader').textContent,
-						fragmentShader: document.getElementById('CIExyYShadowFragmentShader').textContent,
-						blending: THREE.NormalBlending,
-						depthTest: true,
-						transparent: true,
-
-						uniforms: {
-							tex: { value: videoTexture },
-						}
-					});
-					let shadowPoints3 = new THREE.Points(geometry, shadowSpaceMaterial2);
-					CIExyYVisMesh.add(shadowPoints3);
-
-					CIExyYVisMesh.add(gridHelper.clone());
-					CIExyYVisMesh.add(axesHelper.clone());
-					CIExyYVisMesh.add(line.clone());
-
-					CIExyYVisMesh.position.x = 0;
-					CIExyYVisMesh.position.y = 1;
-
-					scene.add(CIExyYVisMesh);
-
-					{ // CIEXYy Density
-						let CIExyYDensityVisMesh = new THREE.Object3D();
-
-						var CIExyYDensitySpaceMaterial = new THREE.ShaderMaterial({
-							vertexShader: document.getElementById('CIExyYDensityVertexShader').textContent,
-							fragmentShader: document.getElementById('CIExyYDensityFragmentShader').textContent,
-							// blending: THREE.AdditiveBlending,
-							depthTest: true,
-							transparent: true,
-
-							uniforms: {
-								tex: { value: videoTexture },
-							}
-						});
-
-						let pointsCIExyYDensity = new THREE.Points(geometry, CIExyYDensitySpaceMaterial);
-						CIExyYDensityVisMesh.add(pointsCIExyYDensity);
-
-
-						CIExyYDensityVisMesh.add(shadowPoints3.clone());
-
-						CIExyYDensityVisMesh.add(gridHelper.clone());
-						CIExyYDensityVisMesh.add(axesHelper.clone());
-						CIExyYDensityVisMesh.add(line.clone());
-
-						CIExyYDensityVisMesh.position.x = 0;
-						CIExyYDensityVisMesh.position.y = -1;
-
-						scene.add(CIExyYDensityVisMesh);
-					}
-				}
-
-				{ // CIE LAB
-					let CIELabVisMesh = new THREE.Object3D();
-
-					var CIELabSpaceMaterial = new THREE.ShaderMaterial({
-						vertexShader: document.getElementById('CIELabVertexShader').textContent,
-						fragmentShader: document.getElementById('CIELabFragmentShader').textContent,
-						// blending: THREE.AdditiveBlending,
-						depthTest: true,
-						transparent: true,
-
-						uniforms: {
-							tex: { value: videoTexture },
-						}
-					});
-
-					let pointsCIELab = new THREE.Points(geometry, CIELabSpaceMaterial);
-					CIELabVisMesh.add(pointsCIELab);
-
-
-					var shadowSpaceMaterial2 = new THREE.ShaderMaterial({
-						vertexShader: document.getElementById('CIELabShadowVertexShader').textContent,
-						fragmentShader: document.getElementById('CIELabShadowFragmentShader').textContent,
-						blending: THREE.NormalBlending,
-						depthTest: true,
-						transparent: true,
-
-						uniforms: {
-							tex: { value: videoTexture },
-						}
-					});
-					let shadowPoints3 = new THREE.Points(geometry, shadowSpaceMaterial2);
-					CIELabVisMesh.add(shadowPoints3);
-
-					CIELabVisMesh.add(gridHelper.clone());
-					CIELabVisMesh.add(axesHelper.clone());
-					CIELabVisMesh.add(line.clone());
-
-					CIELabVisMesh.position.x = -1;
-					CIELabVisMesh.position.y = 1;
-
-					scene.add(CIELabVisMesh);
-
-					{ // CIELab Density
-						let CIELabDensityVisMesh = new THREE.Object3D();
-
-						var CIELabDensitySpaceMaterial = new THREE.ShaderMaterial({
-							vertexShader: document.getElementById('CIELabDensityVertexShader').textContent,
-							fragmentShader: document.getElementById('CIELabDensityFragmentShader').textContent,
-							// blending: THREE.AdditiveBlending,
-							depthTest: true,
-							transparent: true,
-
-							uniforms: {
-								tex: { value: videoTexture },
-							}
-						});
-
-						let pointsCIELabDensity = new THREE.Points(geometry, CIELabDensitySpaceMaterial);
-						CIELabDensityVisMesh.add(pointsCIELabDensity);
-
-
-						CIELabDensityVisMesh.add(shadowPoints3.clone());
-
-						CIELabDensityVisMesh.add(gridHelper.clone());
-						CIELabDensityVisMesh.add(axesHelper.clone());
-						CIELabDensityVisMesh.add(line.clone());
-
-						CIELabDensityVisMesh.position.x = 1;
-						CIELabDensityVisMesh.position.y = 1;
-
-						scene.add(CIELabDensityVisMesh);
-					}
-				}
-
+				// 	scene.add(RGBDensityVisMesh);
+				// }
 
 				// {
-				// 	let CIELABVisMesh = new THREE.Object3D();
+				// 	let CIExyYVisMesh = new THREE.Object3D();
 
-				// 	var CIELABSpaceMaterial = new THREE.ShaderMaterial({
-				// 		vertexShader: document.getElementById('CIELABVertexShader').textContent,
-				// 		fragmentShader: document.getElementById('CIELABFragmentShader').textContent,
+				// 	var CIExyYSpaceMaterial = new THREE.ShaderMaterial({
+				// 		vertexShader: document.getElementById('CIExyYVertexShader').textContent,
+				// 		fragmentShader: document.getElementById('CIExyYFragmentShader').textContent,
 				// 		// blending: THREE.AdditiveBlending,
 				// 		depthTest: true,
 				// 		transparent: true,
@@ -1240,21 +1092,139 @@
 				// 		}
 				// 	});
 
-				// 	let pointsCIELAB = new THREE.Points(geometry, CIELABSpaceMaterial);
-				// 	CIELABVisMesh.add(pointsCIELAB);
-				// 	let shadowPoints3 = shadowPoints.clone();
-				// 	CIELABVisMesh.add(shadowPoints3);
+				// 	let pointsCIExyY = new THREE.Points(geometry, CIExyYSpaceMaterial);
+				// 	CIExyYVisMesh.add(pointsCIExyY);
 
-				// 	CIELABVisMesh.add(gridHelper.clone());
-				// 	CIELABVisMesh.add(axesHelper.clone());
-				// 	CIELABVisMesh.add(line.clone());
 
-				// 	CIELABVisMesh.position.x = 0;
-				// 	CIELABVisMesh.position.y = 1;
+				// 	var shadowSpaceMaterial2 = new THREE.ShaderMaterial({
+				// 		vertexShader: document.getElementById('CIExyYShadowVertexShader').textContent,
+				// 		fragmentShader: document.getElementById('CIExyYShadowFragmentShader').textContent,
+				// 		blending: THREE.NormalBlending,
+				// 		depthTest: true,
+				// 		transparent: true,
 
-				// 	scene.add(CIELABVisMesh);
+				// 		uniforms: {
+				// 			tex: { value: videoTexture },
+				// 		}
+				// 	});
+				// 	let shadowPoints3 = new THREE.Points(geometry, shadowSpaceMaterial2);
+				// 	CIExyYVisMesh.add(shadowPoints3);
 
+				// 	CIExyYVisMesh.add(gridHelper.clone());
+				// 	CIExyYVisMesh.add(axesHelper.clone());
+				// 	CIExyYVisMesh.add(line.clone());
+
+				// 	CIExyYVisMesh.position.x = 0;
+				// 	CIExyYVisMesh.position.y = 1;
+
+				// 	scene.add(CIExyYVisMesh);
+
+				// 	{ // CIEXYy Density
+				// 		let CIExyYDensityVisMesh = new THREE.Object3D();
+
+				// 		var CIExyYDensitySpaceMaterial = new THREE.ShaderMaterial({
+				// 			vertexShader: document.getElementById('CIExyYDensityVertexShader').textContent,
+				// 			fragmentShader: document.getElementById('CIExyYDensityFragmentShader').textContent,
+				// 			// blending: THREE.AdditiveBlending,
+				// 			depthTest: true,
+				// 			transparent: true,
+
+				// 			uniforms: {
+				// 				tex: { value: videoTexture },
+				// 			}
+				// 		});
+
+				// 		let pointsCIExyYDensity = new THREE.Points(geometry, CIExyYDensitySpaceMaterial);
+				// 		CIExyYDensityVisMesh.add(pointsCIExyYDensity);
+
+
+				// 		CIExyYDensityVisMesh.add(shadowPoints3.clone());
+
+				// 		CIExyYDensityVisMesh.add(gridHelper.clone());
+				// 		CIExyYDensityVisMesh.add(axesHelper.clone());
+				// 		CIExyYDensityVisMesh.add(line.clone());
+
+				// 		CIExyYDensityVisMesh.position.x = 0;
+				// 		CIExyYDensityVisMesh.position.y = -1;
+
+				// 		scene.add(CIExyYDensityVisMesh);
+				// 	}
 				// }
+
+				// { // CIE LAB
+				// 	let CIELabVisMesh = new THREE.Object3D();
+
+				// 	var CIELabSpaceMaterial = new THREE.ShaderMaterial({
+				// 		vertexShader: document.getElementById('CIELabVertexShader').textContent,
+				// 		fragmentShader: document.getElementById('CIELabFragmentShader').textContent,
+				// 		// blending: THREE.AdditiveBlending,
+				// 		depthTest: true,
+				// 		transparent: true,
+
+				// 		uniforms: {
+				// 			tex: { value: videoTexture },
+				// 		}
+				// 	});
+
+				// 	let pointsCIELab = new THREE.Points(geometry, CIELabSpaceMaterial);
+				// 	CIELabVisMesh.add(pointsCIELab);
+
+
+				// 	var shadowSpaceMaterial2 = new THREE.ShaderMaterial({
+				// 		vertexShader: document.getElementById('CIELabShadowVertexShader').textContent,
+				// 		fragmentShader: document.getElementById('CIELabShadowFragmentShader').textContent,
+				// 		blending: THREE.NormalBlending,
+				// 		depthTest: true,
+				// 		transparent: true,
+
+				// 		uniforms: {
+				// 			tex: { value: videoTexture },
+				// 		}
+				// 	});
+				// 	let shadowPoints3 = new THREE.Points(geometry, shadowSpaceMaterial2);
+				// 	CIELabVisMesh.add(shadowPoints3);
+
+				// 	CIELabVisMesh.add(gridHelper.clone());
+				// 	CIELabVisMesh.add(axesHelper.clone());
+				// 	CIELabVisMesh.add(line.clone());
+
+				// 	CIELabVisMesh.position.x = -1;
+				// 	CIELabVisMesh.position.y = 1;
+
+				// 	scene.add(CIELabVisMesh);
+
+				// 	{ // CIELab Density
+				// 		let CIELabDensityVisMesh = new THREE.Object3D();
+
+				// 		var CIELabDensitySpaceMaterial = new THREE.ShaderMaterial({
+				// 			vertexShader: document.getElementById('CIELabDensityVertexShader').textContent,
+				// 			fragmentShader: document.getElementById('CIELabDensityFragmentShader').textContent,
+				// 			// blending: THREE.AdditiveBlending,
+				// 			depthTest: true,
+				// 			transparent: true,
+
+				// 			uniforms: {
+				// 				tex: { value: videoTexture },
+				// 			}
+				// 		});
+
+				// 		let pointsCIELabDensity = new THREE.Points(geometry, CIELabDensitySpaceMaterial);
+				// 		CIELabDensityVisMesh.add(pointsCIELabDensity);
+
+
+				// 		CIELabDensityVisMesh.add(shadowPoints3.clone());
+
+				// 		CIELabDensityVisMesh.add(gridHelper.clone());
+				// 		CIELabDensityVisMesh.add(axesHelper.clone());
+				// 		CIELabDensityVisMesh.add(line.clone());
+
+				// 		CIELabDensityVisMesh.position.x = 1;
+				// 		CIELabDensityVisMesh.position.y = 1;
+
+				// 		scene.add(CIELabDensityVisMesh);
+				// 	}
+				// }
+
 
 				video.play();
 			};
