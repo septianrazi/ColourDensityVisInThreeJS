@@ -986,7 +986,7 @@
 
 				//GLOBAL
 
-				var boundingBoxGeo = new THREE.BoxGeometry(1, 1, 1);
+				var boundingBoxGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 				var wireframe = new THREE.EdgesGeometry(boundingBoxGeo);
 				var boundingBox = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
 
@@ -1034,6 +1034,7 @@
 
 					points = new THREE.Points(pointsGeometry, colorSpaceMaterial);
 					points.position.set(0, 0, 0)
+					points.scale.set(1, 1, 1);
 					thisVisMesh.add(points);
 
 					var shadowSpaceMaterial = new THREE.ShaderMaterial({
@@ -1053,13 +1054,17 @@
 					thisVisMesh.add(gridHelper.clone());
 					thisVisMesh.add(axesHelper.clone());
 
+					thisVisMesh.scale.set(0.5, 0.5, 0.5);
+
 					var thisVisMeshBox = boundingBox.clone();
+					thisVisMeshBox.scale.x = 0.1;
 					thisVisMeshBox.material.depthTest = true;
 					thisVisMeshBox.material.opacity = 0.5;
 					thisVisMeshBox.material.linewidth = 10;
 					thisVisMeshBox.material.transparent = true;
-					thisVisMeshBox.add(thisVisMesh);
 
+					thisVisMeshBox.add(thisVisMesh);
+					// thisVisMeshBox.position.y = 0.5;
 
 					const thisVisMeshEntity = world.createEntity();
 					thisVisMeshEntity.addComponent(Intersectable);
@@ -1085,6 +1090,7 @@
 				let CIExyYVisMesh = makeVis('CIExyYVertexShader', 'CIExyYFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
 				CIExyYVisMesh.position.x = 1;
 				CIExyYVisMesh.position.y = 1.5;
+				// CIExyYVisMesh.scale.set(0.5, 0.5, 0.5);
 				scene.add(CIExyYVisMesh);
 
 				let CIExyYDensityVisMesh = makeVis('CIExyYDensityVertexShader', 'CIExyYDensityFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
@@ -1166,10 +1172,6 @@
 			};
 
 			ebEntity.addComponent(Button, { action: ebAction });
-
-			// const itEntity = world.createEntity();
-			// itEntity.addComponent(HandsInstructionText);
-			// itEntity.addComponent(Object3D, { object: instructionText });
 
 			window.addEventListener('resize', onWindowResize);
 
