@@ -481,7 +481,7 @@
 
 		let points;
 
-		let RGBVisMesh;
+		// let RGBVisMesh;
 
 		var context, canvas;
 		var plan, plan_ori;
@@ -958,7 +958,6 @@
 				videoTexture.format = THREE.RGBAFormat;
 
 				// VIDEO -------------
-
 				var geometry2 = new THREE.PlaneGeometry(
 					1,
 					video.videoHeight / video.videoWidth
@@ -984,82 +983,161 @@
 
 
 				// POINT CLOUD ------
-				RGBVisMesh = new THREE.Object3D();
-				var discret = 1;
 
-				var colorSpaceMaterial = new THREE.ShaderMaterial({
-					vertexShader: document.getElementById('RGBVertexShader').textContent,
-					fragmentShader: document.getElementById('RGBFragmentShader').textContent,
-					// blending: THREE.MultiplicativeBlending,
-					depthTest: true,
-					transparent: true,
-					uniforms: {
-						tex: { value: videoTexture },
-					}
-				});
+				//GLOBAL
 
-				const geometry = new THREE.BufferGeometry();
+				var boundingBoxGeo = new THREE.BoxGeometry(1, 1, 1);
+				var wireframe = new THREE.EdgesGeometry(boundingBoxGeo);
+				var boundingBox = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
+
+				const pointsGeometry = new THREE.BufferGeometry();
 				const positions = [];
-				let compteur = 0;
-				for (let i = 0; i < video.videoHeight; i += discret)
-					for (let j = 0; j < video.videoWidth; j += discret) {
+
+				var discrete = 1;
+				let counter = 0;
+
+				for (let i = 0; i < video.videoHeight; i += discrete)
+					for (let j = 0; j < video.videoWidth; j += discrete) {
 						// positions
 						const x = (i + 0.5) / video.videoHeight;
 						const y = (j + 0.5) / video.videoWidth;
 						const z = 0;
 
 						positions.push(x, y, z);
-						compteur++;
+						counter++;
 					}
 
-				geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-				geometry.computeBoundingSphere();
-
-				points = new THREE.Points(geometry, colorSpaceMaterial);
-
-
-				RGBVisMesh.add(points);
+				pointsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+				pointsGeometry.computeBoundingSphere();
 
 				var gridHelper = new THREE.GridHelper(1, 10);
 				gridHelper.position.y = -0.5;
-				RGBVisMesh.add(gridHelper);
 
 				var axesHelper = new THREE.AxesHelper(1);
 				axesHelper.position.set(-0.5, -0.5, -0.5)
-				RGBVisMesh.add(axesHelper);
 
-				var shadowSpaceMaterial = new THREE.ShaderMaterial({
-					vertexShader: document.getElementById('RGBShadowVertexShader').textContent,
-					fragmentShader: document.getElementById('RGBShadowFragmentShader').textContent,
-					blending: THREE.NormalBlending,
-					depthTest: true,
-					transparent: true,
 
-					uniforms: {
-						tex: { value: videoTexture },
-					}
-				});
-				let shadowPoints = new THREE.Points(geometry, shadowSpaceMaterial);
-				RGBVisMesh.add(shadowPoints);
+				function makeVis(vertexShader, fragmentShader, shadowVertexShader, shadowFragmentShader) {
 
-				var boundingBoxGeo = new THREE.BoxGeometry(1, 1, 1);
-				var wireframe = new THREE.EdgesGeometry(boundingBoxGeo);
-				var boundingBox = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
-				boundingBox.material.depthTest = true;
-				boundingBox.material.opacity = 0.5;
-				boundingBox.material.linewidth = 10;
-				boundingBox.material.transparent = true;
-				boundingBox.add(RGBVisMesh);
-				scene.add(boundingBox);
+					const thisVisMesh = new THREE.Object3D();
 
-				boundingBox.position.x = 1;
-				boundingBox.position.y = 1.5;
-				boundingBox.position.z = -2.0
+					var colorSpaceMaterial = new THREE.ShaderMaterial({
+						vertexShader: document.getElementById(vertexShader).textContent,
+						fragmentShader: document.getElementById(fragmentShader).textContent,
+						// blending: THREE.MultiplicativeBlending,
+						depthTest: true,
+						transparent: true,
+						uniforms: {
+							tex: { value: videoTexture },
+						}
+					});
 
-				const RGBVisMeshEntity = world.createEntity();
-				RGBVisMeshEntity.addComponent(Intersectable);
-				RGBVisMeshEntity.addComponent(Object3D, { object: boundingBox });
-				RGBVisMeshEntity.addComponent(Draggable);
+					points = new THREE.Points(pointsGeometry, colorSpaceMaterial);
+					thisVisMesh.add(points);
+
+					var shadowSpaceMaterial = new THREE.ShaderMaterial({
+						vertexShader: document.getElementById(shadowVertexShader).textContent,
+						fragmentShader: document.getElementById(shadowFragmentShader).textContent,
+						blending: THREE.NormalBlending,
+						depthTest: true,
+						transparent: true,
+
+						uniforms: {
+							tex: { value: videoTexture },
+						}
+					});
+					let shadowPoints = new THREE.Points(pointsGeometry, shadowSpaceMaterial);
+					thisVisMesh.add(shadowPoints);
+
+					thisVisMesh.add(gridHelper.clone());
+					thisVisMesh.add(axesHelper.clone());
+
+					var thisVisMeshBox = boundingBox.clone();
+					thisVisMeshBox.material.depthTest = true;
+					thisVisMeshBox.material.opacity = 0.5;
+					thisVisMeshBox.material.linewidth = 10;
+					thisVisMeshBox.material.transparent = true;
+					thisVisMeshBox.add(thisVisMesh);
+
+
+					const thisVisMeshEntity = world.createEntity();
+					thisVisMeshEntity.addComponent(Intersectable);
+					thisVisMeshEntity.addComponent(Object3D, { object: thisVisMeshBox });
+					thisVisMeshEntity.addComponent(Draggable);
+
+					return thisVisMeshBox;
+				}
+
+				// MESHES FOR EACH VIS
+
+				let RGBVisMesh = makeVis('RGBVertexShader', 'RGBFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
+				RGBVisMesh.position.x = 1;
+				RGBVisMesh.position.y = 1.5;
+				RGBVisMesh.position.z = -2.0
+				scene.add(RGBVisMesh);
+
+
+				let RGBDensityVisMesh = makeVis('RGBDensityVertexShader', 'RGBDensityFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
+				RGBDensityVisMesh.position.x = -1;
+				RGBDensityVisMesh.position.y = 1.5;
+				RGBDensityVisMesh.position.z = -2.0
+				scene.add(RGBDensityVisMesh);
+
+				// let RGBVisMesh = new THREE.Object3D();
+
+
+				// var colorSpaceMaterial = new THREE.ShaderMaterial({
+				// 	vertexShader: document.getElementById('RGBVertexShader').textContent,
+				// 	fragmentShader: document.getElementById('RGBFragmentShader').textContent,
+				// 	// blending: THREE.MultiplicativeBlending,
+				// 	depthTest: true,
+				// 	transparent: true,
+				// 	uniforms: {
+				// 		tex: { value: videoTexture },
+				// 	}
+				// });
+
+				// points = new THREE.Points(pointsGeometry, colorSpaceMaterial);
+				// RGBVisMesh.add(points);
+
+				// var gridHelper = new THREE.GridHelper(1, 10);
+				// gridHelper.position.y = -0.5;
+				// RGBVisMesh.add(gridHelper);
+
+				// var axesHelper = new THREE.AxesHelper(1);
+				// axesHelper.position.set(-0.5, -0.5, -0.5)
+				// RGBVisMesh.add(axesHelper);
+
+				// var shadowSpaceMaterial = new THREE.ShaderMaterial({
+				// 	vertexShader: document.getElementById('RGBShadowVertexShader').textContent,
+				// 	fragmentShader: document.getElementById('RGBShadowFragmentShader').textContent,
+				// 	blending: THREE.NormalBlending,
+				// 	depthTest: true,
+				// 	transparent: true,
+
+				// 	uniforms: {
+				// 		tex: { value: videoTexture },
+				// 	}
+				// });
+				// let shadowPoints = new THREE.Points(pointsGeometry, shadowSpaceMaterial);
+				// RGBVisMesh.add(shadowPoints);
+
+				// var RGBVisMeshBox = boundingBox.clone();
+				// RGBVisMeshBox.material.depthTest = true;
+				// RGBVisMeshBox.material.opacity = 0.5;
+				// RGBVisMeshBox.material.linewidth = 10;
+				// RGBVisMeshBox.material.transparent = true;
+				// RGBVisMeshBox.add(RGBVisMesh);
+				// scene.add(RGBVisMeshBox);
+
+				// RGBVisMeshBox.position.x = 1;
+				// RGBVisMeshBox.position.y = 1.5;
+				// RGBVisMeshBox.position.z = -2.0
+
+				// const RGBVisMeshEntity = world.createEntity();
+				// RGBVisMeshEntity.addComponent(Intersectable);
+				// RGBVisMeshEntity.addComponent(Object3D, { object: RGBVisMeshBox });
+				// RGBVisMeshEntity.addComponent(Draggable);
 
 				// {
 				// 	let RGBDensityVisMesh = new THREE.Object3D();
@@ -1326,6 +1404,7 @@
 			return buttonMesh;
 
 		}
+
 
 		function addGUI() {
 			// {//gui
