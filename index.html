@@ -973,10 +973,10 @@
 				plan_ori.castShadow = false;
 
 				const videoEntity = world.createEntity();
-				entity.addComponent(Intersectable);
+				videoEntity.addComponent(Intersectable);
 				// entity.addComponent(Randomizable);
-				entity.addComponent(Object3D, { object: plan_ori });
-				entity.addComponent(Draggable);
+				videoEntity.addComponent(Object3D, { object: plan_ori });
+				videoEntity.addComponent(Draggable);
 
 				scene.add(plan_ori);
 
@@ -1085,6 +1085,8 @@
 
 					RGBDensityVisMesh.position.x = -1;
 					RGBDensityVisMesh.position.y = -0.5;
+					RGBDensityVisMesh.position.z = -2.0
+
 
 					scene.add(RGBDensityVisMesh);
 				}
