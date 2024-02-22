@@ -971,6 +971,13 @@
 				plan_ori.position.z = -2.5;
 				plan_ori.receiveShadow = false;
 				plan_ori.castShadow = false;
+
+				const videoEntity = world.createEntity();
+				entity.addComponent(Intersectable);
+				// entity.addComponent(Randomizable);
+				entity.addComponent(Object3D, { object: plan_ori });
+				entity.addComponent(Draggable);
+
 				scene.add(plan_ori);
 
 
@@ -1026,6 +1033,12 @@
 				line.material.opacity = 0.5;
 				line.material.linewidth = 10;
 				line.material.transparent = true;
+				const entity = world.createEntity();
+				entity.addComponent(Intersectable);
+				// entity.addComponent(Randomizable);
+				entity.addComponent(Object3D, { object: line });
+				entity.addComponent(Draggable);
+
 				RGBVisMesh.add(line);
 
 				var shadowSpaceMaterial = new THREE.ShaderMaterial({
