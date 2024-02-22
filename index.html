@@ -968,7 +968,9 @@
 					side: THREE.DoubleSide,
 				});
 				plan_ori = new THREE.Mesh(geometry2, material2);
+				plant_ori.position.y = 1.5;
 				plan_ori.position.z = -2.5;
+
 				plan_ori.receiveShadow = false;
 				plan_ori.castShadow = false;
 
@@ -1033,13 +1035,15 @@
 				line.material.opacity = 0.5;
 				line.material.linewidth = 10;
 				line.material.transparent = true;
-				const entity = world.createEntity();
-				entity.addComponent(Intersectable);
-				// entity.addComponent(Randomizable);
-				entity.addComponent(Object3D, { object: line });
-				entity.addComponent(Draggable);
+
+
 
 				RGBVisMesh.add(line);
+
+				const RGBVisMeshEntity = world.createEntity();
+				RGBVisMeshEntity.addComponent(Intersectable);
+				RGBVisMeshEntity.addComponent(Object3D, { object: RGBVisMesh });
+				RGBVisMeshEntity.addComponent(Draggable);
 
 				var shadowSpaceMaterial = new THREE.ShaderMaterial({
 					vertexShader: document.getElementById('RGBShadowVertexShader').textContent,
@@ -1056,7 +1060,7 @@
 				RGBVisMesh.add(shadowPoints);
 
 				RGBVisMesh.position.x = 1;
-				RGBVisMesh.position.y = -0.5;
+				RGBVisMesh.position.y = 1.5;
 				RGBVisMesh.position.z = -2.0
 				scene.add(RGBVisMesh);
 
@@ -1084,11 +1088,15 @@
 					RGBDensityVisMesh.add(line.clone());
 
 					RGBDensityVisMesh.position.x = -1;
-					RGBDensityVisMesh.position.y = -0.5;
+					RGBDensityVisMesh.position.y = 1.5;
 					RGBDensityVisMesh.position.z = -2.0
 
-
 					scene.add(RGBDensityVisMesh);
+
+					const RGBDensityVisMeshEntity = world.createEntity();
+					RGBDensityVisMeshEntity.addComponent(Intersectable);
+					RGBDensityVisMeshEntity.addComponent(Object3D, { object: RGBDensityVisMesh });
+					RGBDensityVisMeshEntity.addComponent(Draggable);
 				}
 
 				// {
