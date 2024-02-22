@@ -1028,23 +1028,6 @@
 				axesHelper.position.set(-0.5, -0.5, -0.5)
 				RGBVisMesh.add(axesHelper);
 
-				var boundingBox = new THREE.BoxGeometry(1, 1, 1);
-				var wireframe = new THREE.EdgesGeometry(boundingBox);
-				var line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
-				line.material.depthTest = true;
-				line.material.opacity = 0.5;
-				line.material.linewidth = 10;
-				line.material.transparent = true;
-
-
-
-				RGBVisMesh.add(line);
-
-				const RGBVisMeshEntity = world.createEntity();
-				RGBVisMeshEntity.addComponent(Intersectable);
-				RGBVisMeshEntity.addComponent(Object3D, { object: RGBVisMesh });
-				RGBVisMeshEntity.addComponent(Draggable);
-
 				var shadowSpaceMaterial = new THREE.ShaderMaterial({
 					vertexShader: document.getElementById('RGBShadowVertexShader').textContent,
 					fragmentShader: document.getElementById('RGBShadowFragmentShader').textContent,
@@ -1059,10 +1042,34 @@
 				let shadowPoints = new THREE.Points(geometry, shadowSpaceMaterial);
 				RGBVisMesh.add(shadowPoints);
 
+
+				var boundingBox = new THREE.BoxGeometry(1, 1, 1);
+				var wireframe = new THREE.EdgesGeometry(boundingBox);
+				var line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
+				line.material.depthTest = true;
+				line.material.opacity = 0.5;
+				line.material.linewidth = 10;
+				line.material.transparent = true;
+				RGBVisMesh.add(line);
+
 				RGBVisMesh.position.x = 1;
 				RGBVisMesh.position.y = 1.5;
 				RGBVisMesh.position.z = -2.0
-				scene.add(RGBVisMesh);
+
+				var boundingBox = new THREE.BoxGeometry(1, 1, 1);
+				var wireframe = new THREE.EdgesGeometry(boundingBox);
+				var line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
+				line.material.depthTest = true;
+				line.material.opacity = 0.5;
+				line.material.linewidth = 10;
+				line.material.transparent = true;
+				line.add(RGBVisMesh);
+				scene.add(line);
+
+				const RGBVisMeshEntity = world.createEntity();
+				RGBVisMeshEntity.addComponent(Intersectable);
+				RGBVisMeshEntity.addComponent(Object3D, { object: line });
+				RGBVisMeshEntity.addComponent(Draggable);
 
 				{
 					let RGBDensityVisMesh = new THREE.Object3D();
