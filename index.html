@@ -556,7 +556,8 @@
 			// draggable states: [detached, hovered, to-be-attached, attached, to-be-detached]
 			state: { type: Types.String, default: 'none' },
 			originalParent: { type: Types.Ref, default: null },
-			attachedPointer: { type: Types.Ref, default: null }
+			attachedPointer: { type: Types.Ref, default: null },
+			attachedPointer2: { type: Types.Ref, default: null }
 		};
 
 		class DraggableSystem extends System {
@@ -599,6 +600,62 @@
 				components: [Draggable]
 			}
 		};
+
+
+		// Scalable
+		class Scalable extends Component { }
+
+		Scalable.schema = {
+			// Scalable states: [detached, to-be-scaled, scaling, to-be-detached]
+
+			state: { type: Types.String, default: 'none' },
+			originalParent: { type: Types.Ref, default: null },
+			attachedPointer: { type: Types.Ref, default: null },
+			attachedPointer2: { type: Types.Ref, default: null }
+		};
+
+		class ScalableSystem extends System {
+
+			execute( /*delta, time*/) {
+
+				this.queries.scalable.results.forEach(entity => {
+
+					const scalable = entity.getMutableComponent(Scalable);
+					const object = entity.getComponent(Object3D).object;
+					if (scalable.originalParent == null) {
+
+						scalable.originalParent = object.parent;
+
+					}
+
+					switch (scalable.state) {
+
+						case 'to-be-attached':
+							scalable.attachedPointer.children[0].attach(object);
+							scalable.state = 'attached';
+							break;
+						case 'to-be-detached':
+							scalable.originalParent.attach(object);
+							scalable.state = 'detached';
+							break;
+						default:
+							object.scale.set(1, 1, 1);
+
+					}
+
+				});
+
+			}
+
+		}
+
+		ScalableSystem.queries = {
+			scalable: {
+				components: [Scalable]
+			}
+		};
+
+
 
 		class Intersectable extends TagComponent { }
 
@@ -655,6 +712,8 @@
 							const draggable = intersectingEntity.getMutableComponent(Draggable);
 							const object = intersectingEntity.getComponent(Object3D).object;
 							object.scale.set(1.1, 1.1, 1.1);
+
+
 							if (hp.isPinched()) {
 
 								if (!hp.isAttached() && draggable.state != 'attached') {
@@ -663,6 +722,11 @@
 									draggable.attachedPointer = hp;
 									hp.setAttached(true);
 
+								} else { // When pinching on another one
+									draggable.state = 'to-be-scaled';
+									draggable.attachedPointer2 = hp;
+									object.scale(1.5, 1.5, 1.5)
+									hp.setAttached(true);
 								}
 
 							} else {
@@ -672,6 +736,44 @@
 									console.log('hello');
 									draggable.state = 'to-be-detached';
 									draggable.attachedPointer = null;
+									hp.setAttached(false);
+
+								}
+
+							}
+
+						}
+
+						if (intersectingEntity.hasComponent(Scalable)) {
+
+							const scalable = intersectingEntity.getMutableComponent(Scalable);
+							const object = intersectingEntity.getComponent(Object3D).object;
+							// object.scale.set(1.1, 1.1, 1.1);
+
+							if (this.handPointers.every(hp => hp.isAttached())) {
+								// Both hp are attached to the object
+								console.log('Both hp are attached to the object');
+							} else {
+								// At least one hp is not attached to the object
+								console.log('Not all hp are attached to the object');
+							}
+							if (hp.isPinched()) {
+
+								if (!hp.isAttached() && scalable.state != 'attached') {
+
+									scalable.state = 'to-be-attached';
+									scalable.attachedPointer = hp;
+									hp.setAttached(true);
+
+								}
+
+							} else {
+
+								if (hp.isAttached() && scalable.state == 'attached') {
+
+									console.log('hello');
+									scalable.state = 'to-be-detached';
+									scalable.attachedPointer = null;
 									hp.setAttached(false);
 
 								}
@@ -928,7 +1030,8 @@
 				.registerComponent(OffsetFromCamera)
 				.registerComponent(NeedCalibration)
 				.registerComponent(Randomizable)
-				.registerComponent(Draggable);
+				.registerComponent(Draggable)
+				.registerComponent(Scalable);
 
 			world
 				.registerSystem(RandomizerSystem)
@@ -936,6 +1039,7 @@
 				.registerSystem(CalibrationSystem, { renderer: renderer, camera: camera })
 				.registerSystem(ButtonSystem)
 				.registerSystem(DraggableSystem)
+				.registerSystem(ScalableSystem)
 				.registerSystem(HandRaySystem, { handPointers: [handPointer1, handPointer2] });
 
 
@@ -978,6 +1082,8 @@
 				// entity.addComponent(Randomizable);
 				videoEntity.addComponent(Object3D, { object: plan_ori });
 				videoEntity.addComponent(Draggable);
+				videoEntity.addComponent(Scalable);
+
 
 				scene.add(plan_ori);
 
@@ -1072,6 +1178,7 @@
 					thisVisMeshEntity.addComponent(Intersectable);
 					thisVisMeshEntity.addComponent(Object3D, { object: thisVisMeshBox });
 					thisVisMeshEntity.addComponent(Draggable);
+					thisVisMeshEntity.addComponent(Scalable);
 
 					return thisVisMeshBox;
 				}
