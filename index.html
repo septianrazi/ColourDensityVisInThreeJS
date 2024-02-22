@@ -1033,6 +1033,7 @@
 					});
 
 					points = new THREE.Points(pointsGeometry, colorSpaceMaterial);
+					points.position.set(0, 0, 0)
 					thisVisMesh.add(points);
 
 					var shadowSpaceMaterial = new THREE.ShaderMaterial({
@@ -1069,37 +1070,37 @@
 				}
 
 				// MESHES FOR EACH VIS
-				let RGBVisMesh = makeVis('RGBVertexShader', 'RGBFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
-				RGBVisMesh.position.x = 1;
-				RGBVisMesh.position.y = 1.5;
-				RGBVisMesh.position.z = -2.0
-				scene.add(RGBVisMesh);
+				// let RGBVisMesh = makeVis('RGBVertexShader', 'RGBFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
+				// RGBVisMesh.position.x = 1;
+				// RGBVisMesh.position.y = 1.5;
+				// RGBVisMesh.position.z = -2.0
+				// scene.add(RGBVisMesh);
 
-				let RGBDensityVisMesh = makeVis('RGBDensityVertexShader', 'RGBDensityFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
-				RGBDensityVisMesh.position.x = -1;
-				RGBDensityVisMesh.position.y = 1.5;
-				RGBDensityVisMesh.position.z = -2.0
-				scene.add(RGBDensityVisMesh);
+				// let RGBDensityVisMesh = makeVis('RGBDensityVertexShader', 'RGBDensityFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
+				// RGBDensityVisMesh.position.x = -1;
+				// RGBDensityVisMesh.position.y = 1.5;
+				// RGBDensityVisMesh.position.z = -2.0
+				// scene.add(RGBDensityVisMesh);
 
 				let CIExyYVisMesh = makeVis('CIExyYVertexShader', 'CIExyYFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
-				CIExyYVisMesh.position.x = 0;
-				CIExyYVisMesh.position.y = 1;
+				CIExyYVisMesh.position.x = 1;
+				CIExyYVisMesh.position.y = 1.5;
 				scene.add(CIExyYVisMesh);
 
 				let CIExyYDensityVisMesh = makeVis('CIExyYDensityVertexShader', 'CIExyYDensityFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
-				CIExyYDensityVisMesh.position.x = 0;
-				CIExyYDensityVisMesh.position.y = -1;
+				CIExyYDensityVisMesh.position.x = -1;
+				CIExyYDensityVisMesh.position.y = 1.5;
 				scene.add(CIExyYDensityVisMesh);
 
-				let CIELabVisMesh = makeVis('CIELabVertexShader', 'CIELabFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
-				CIELabVisMesh.position.x = 1;
-				CIELabVisMesh.position.y = -1;
-				scene.add(CIELabVisMesh);
+				// let CIELabVisMesh = makeVis('CIELabVertexShader', 'CIELabFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
+				// CIELabVisMesh.position.x = 1;
+				// CIELabVisMesh.position.y = -1;
+				// scene.add(CIELabVisMesh);
 
-				let CIELabDensityVisMesh = makeVis('CIELabDensityVertexShader', 'CIELabDensityFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
-				CIELabDensityVisMesh.position.x = -1;
-				CIELabDensityVisMesh.position.y = -1;
-				scene.add(CIELabDensityVisMesh);
+				// let CIELabDensityVisMesh = makeVis('CIELabDensityVertexShader', 'CIELabDensityFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
+				// CIELabDensityVisMesh.position.x = -1;
+				// CIELabDensityVisMesh.position.y = -1;
+				// scene.add(CIELabDensityVisMesh);
 
 
 
@@ -1234,10 +1235,7 @@
 		function animate() {
 			// requestAnimationFrame(animate);
 
-
 			renderer.setAnimationLoop(render);
-
-
 			// render();
 			stats.update();
 
