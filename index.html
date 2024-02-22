@@ -1060,34 +1060,34 @@
 				RGBVisMesh.position.z = -2.0
 				scene.add(RGBVisMesh);
 
-				// {
-				// 	let RGBDensityVisMesh = new THREE.Object3D();
+				{
+					let RGBDensityVisMesh = new THREE.Object3D();
 
-				// 	var colourDensitySpaceMaterial = new THREE.ShaderMaterial({
-				// 		vertexShader: document.getElementById('RGBDensityVertexShader').textContent,
-				// 		fragmentShader: document.getElementById('RGBDensityFragmentShader').textContent,
-				// 		// blending: THREE.AdditiveBlending,
-				// 		depthTest: true,
-				// 		transparent: true,
+					var colourDensitySpaceMaterial = new THREE.ShaderMaterial({
+						vertexShader: document.getElementById('RGBDensityVertexShader').textContent,
+						fragmentShader: document.getElementById('RGBDensityFragmentShader').textContent,
+						// blending: THREE.AdditiveBlending,
+						depthTest: true,
+						transparent: true,
 
-				// 		uniforms: {
-				// 			tex: { value: videoTexture },
-				// 		}
-				// 	});
-				// 	let pointsDensity = new THREE.Points(geometry, colourDensitySpaceMaterial);
-				// 	RGBDensityVisMesh.add(pointsDensity);
-				// 	let shadowPoints2 = shadowPoints.clone();
-				// 	RGBDensityVisMesh.add(shadowPoints2);
+						uniforms: {
+							tex: { value: videoTexture },
+						}
+					});
+					let pointsDensity = new THREE.Points(geometry, colourDensitySpaceMaterial);
+					RGBDensityVisMesh.add(pointsDensity);
+					let shadowPoints2 = shadowPoints.clone();
+					RGBDensityVisMesh.add(shadowPoints2);
 
-				// 	RGBDensityVisMesh.add(gridHelper.clone());
-				// 	RGBDensityVisMesh.add(axesHelper.clone());
-				// 	RGBDensityVisMesh.add(line.clone());
+					RGBDensityVisMesh.add(gridHelper.clone());
+					RGBDensityVisMesh.add(axesHelper.clone());
+					RGBDensityVisMesh.add(line.clone());
 
-				// 	RGBDensityVisMesh.position.x = -1;
-				// 	RGBDensityVisMesh.position.y = -0.5;
+					RGBDensityVisMesh.position.x = -1;
+					RGBDensityVisMesh.position.y = -0.5;
 
-				// 	scene.add(RGBDensityVisMesh);
-				// }
+					scene.add(RGBDensityVisMesh);
+				}
 
 				// {
 				// 	let CIExyYVisMesh = new THREE.Object3D();
