@@ -1042,69 +1042,59 @@
 				let shadowPoints = new THREE.Points(geometry, shadowSpaceMaterial);
 				RGBVisMesh.add(shadowPoints);
 
+				var boundingBoxGeo = new THREE.BoxGeometry(1, 1, 1);
+				var wireframe = new THREE.EdgesGeometry(boundingBoxGeo);
+				var boundingBox = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
+				boundingBox.material.depthTest = true;
+				boundingBox.material.opacity = 0.5;
+				boundingBox.material.linewidth = 10;
+				boundingBox.material.transparent = true;
+				boundingBox.add(RGBVisMesh);
+				scene.add(boundingBox);
 
-				var boundingBox = new THREE.BoxGeometry(1, 1, 1);
-				var wireframe = new THREE.EdgesGeometry(boundingBox);
-				var line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
-				line.material.depthTest = true;
-				line.material.opacity = 0.5;
-				line.material.linewidth = 10;
-				line.material.transparent = true;
-				RGBVisMesh.add(line);
-
-				RGBVisMesh.position.x = 1;
-				RGBVisMesh.position.y = 1.5;
-				RGBVisMesh.position.z = -2.0
-
-				var boundingBox = new THREE.BoxGeometry(1, 1, 1);
-				var wireframe = new THREE.EdgesGeometry(boundingBox);
-				var line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
-				line.material.depthTest = true;
-				line.material.opacity = 0.5;
-				line.material.linewidth = 10;
-				line.material.transparent = true;
-				line.add(RGBVisMesh);
-				scene.add(line);
+				boundingBox.position.x = 1;
+				boundingBox.position.y = 1.5;
+				boundingBox.position.z = -2.0
 
 				const RGBVisMeshEntity = world.createEntity();
 				RGBVisMeshEntity.addComponent(Intersectable);
-				RGBVisMeshEntity.addComponent(Object3D, { object: line });
+				RGBVisMeshEntity.addComponent(Object3D, { object: boundingBox });
 				RGBVisMeshEntity.addComponent(Draggable);
 
-				{
-					let RGBDensityVisMesh = new THREE.Object3D();
+				// {
+				// 	let RGBDensityVisMesh = new THREE.Object3D();
 
-					var colourDensitySpaceMaterial = new THREE.ShaderMaterial({
-						vertexShader: document.getElementById('RGBDensityVertexShader').textContent,
-						fragmentShader: document.getElementById('RGBDensityFragmentShader').textContent,
-						// blending: THREE.AdditiveBlending,
-						depthTest: true,
-						transparent: true,
+				// 	var colourDensitySpaceMaterial = new THREE.ShaderMaterial({
+				// 		vertexShader: document.getElementById('RGBDensityVertexShader').textContent,
+				// 		fragmentShader: document.getElementById('RGBDensityFragmentShader').textContent,
+				// 		// blending: THREE.AdditiveBlending,
+				// 		depthTest: true,
+				// 		transparent: true,
 
-						uniforms: {
-							tex: { value: videoTexture },
-						}
-					});
-					let pointsDensity = new THREE.Points(geometry, colourDensitySpaceMaterial);
-					RGBDensityVisMesh.add(pointsDensity);
-					let shadowPoints2 = shadowPoints.clone();
-					RGBDensityVisMesh.add(shadowPoints2);
+				// 		uniforms: {
+				// 			tex: { value: videoTexture },
+				// 		}
+				// 	});
+				// 	let pointsDensity = new THREE.Points(geometry, colourDensitySpaceMaterial);
+				// 	RGBDensityVisMesh.add(pointsDensity);
+				// 	let shadowPoints2 = shadowPoints.clone();
+				// 	RGBDensityVisMesh.add(shadowPoints2);
 
-					RGBDensityVisMesh.add(gridHelper.clone());
-					RGBDensityVisMesh.add(axesHelper.clone());
-					RGBDensityVisMesh.add(line.clone());
+				// 	RGBDensityVisMesh.add(gridHelper.clone());
+				// 	RGBDensityVisMesh.add(axesHelper.clone());
+				// 	RGBDensityVisMesh.add(boundingBox.clone());
 
-					RGBDensityVisMesh.position.x = -1;
-					RGBDensityVisMesh.position.y = 1.5;
-					RGBDensityVisMesh.position.z = -2.0
+				// 	RGBDensityVisMesh.position.x = -1;
+				// 	RGBDensityVisMesh.position.y = 1.5;
+				// 	RGBDensityVisMesh.position.z = -2.0
 
-					scene.add(RGBDensityVisMesh);
+				// 	scene.add(RGBDensityVisMesh);
 
-					const RGBDensityVisMeshEntity = world.createEntity();
-					RGBDensityVisMeshEntity.addComponent(Intersectable);
-					RGBDensityVisMeshEntity.addComponent(Object3D, { object: RGBDensityVisMesh });
-					RGBDensityVisMeshEntity.addComponent(Draggable);
-				}
+				// 	const RGBDensityVisMeshEntity = world.createEntity();
+				// 	RGBDensityVisMeshEntity.addComponent(Intersectable);
+				// 	RGBDensityVisMeshEntity.addComponent(Object3D, { object: RGBDensityVisMesh });
+				// 	RGBDensityVisMeshEntity.addComponent(Draggable);
+				// }
 
 				// {
 				// 	let CIExyYVisMesh = new THREE.Object3D();
