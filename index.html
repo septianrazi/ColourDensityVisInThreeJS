@@ -1226,9 +1226,85 @@
 				// }
 
 
+
+
 				video.play();
 			};
 
+			const menuGeometry = new THREE.PlaneGeometry(0.24, 0.5);
+			const menuMaterial = new THREE.MeshPhongMaterial({
+				opacity: 0,
+				transparent: true,
+			});
+			const menuMesh = new THREE.Mesh(menuGeometry, menuMaterial);
+			menuMesh.position.set(0.4, 1, - 1);
+			menuMesh.rotation.y = - Math.PI / 12;
+			scene.add(menuMesh);
+
+			const resetButton = makeButtonMesh(0.2, 0.1, 0.01, 0x355c7d);
+			const resetButtonText = createText('reset', 0.06);
+			resetButton.add(resetButtonText);
+			resetButtonText.position.set(0, 0, 0.0051);
+			resetButton.position.set(0, - 0.06, 0);
+			menuMesh.add(resetButton);
+
+			const exitButton = makeButtonMesh(0.2, 0.1, 0.01, 0xff0000);
+			const exitButtonText = createText('exit', 0.06);
+			exitButton.add(exitButtonText);
+			exitButtonText.position.set(0, 0, 0.0051);
+			exitButton.position.set(0, - 0.18, 0);
+			menuMesh.add(exitButton);
+
+
+
+			const menuEntity = world.createEntity();
+			menuEntity.addComponent(Intersectable);
+			menuEntity.addComponent(OffsetFromCamera, { x: 0.4, y: 0, z: - 1 });
+			menuEntity.addComponent(NeedCalibration);
+			menuEntity.addComponent(Object3D, { object: menuMesh });
+
+			const rbEntity = world.createEntity();
+			rbEntity.addComponent(Intersectable);
+			rbEntity.addComponent(Object3D, { object: resetButton });
+			const rbAction = function () {
+
+				world.getSystem(RandomizerSystem).needRandomizing = true;
+
+			};
+
+			rbEntity.addComponent(Button, { action: rbAction });
+
+			const ebEntity = world.createEntity();
+			ebEntity.addComponent(Intersectable);
+			ebEntity.addComponent(Object3D, { object: exitButton });
+			const ebAction = function () {
+
+				exitText.visible = true;
+				setTimeout(function () {
+
+					exitText.visible = false; renderer.xr.getSession().end();
+
+				}, 2000);
+
+			};
+
+			ebEntity.addComponent(Button, { action: ebAction });
+
+			// const itEntity = world.createEntity();
+			// itEntity.addComponent(HandsInstructionText);
+			// itEntity.addComponent(Object3D, { object: instructionText });
+
+			window.addEventListener('resize', onWindowResize);
+
+
+		}
+
+		function makeButtonMesh(x, y, z, color) {
+
+			const geometry = new THREE.BoxGeometry(x, y, z);
+			const material = new THREE.MeshPhongMaterial({ color: color });
+			const buttonMesh = new THREE.Mesh(geometry, material);
+			return buttonMesh;
 
 		}
 
@@ -1284,17 +1360,24 @@
 
 			controls.update(0.5);
 
-			render();
+			renderer.setAnimationLoop(render);
+
+
+			// render();
 			stats.update();
+
 		}
 
 		function render() {
 			if (typeof imageProcessing !== "undefined")
 				IVprocess(imageProcessing, renderer);
+			const delta = clock.getDelta();
+			const elapsedTime = clock.elapsedTime;
+			renderer.xr.updateCamera(camera);
+			world.execute(delta, elapsedTime);
 			renderer.render(scene, camera);
 		}
 
-		renderer.setAnimationLoop(animate);
 
 
 	</script>
