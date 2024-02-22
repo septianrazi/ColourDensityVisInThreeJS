@@ -1069,13 +1069,11 @@
 				}
 
 				// MESHES FOR EACH VIS
-
 				let RGBVisMesh = makeVis('RGBVertexShader', 'RGBFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
 				RGBVisMesh.position.x = 1;
 				RGBVisMesh.position.y = 1.5;
 				RGBVisMesh.position.z = -2.0
 				scene.add(RGBVisMesh);
-
 
 				let RGBDensityVisMesh = makeVis('RGBDensityVertexShader', 'RGBDensityFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
 				RGBDensityVisMesh.position.x = -1;
@@ -1083,244 +1081,25 @@
 				RGBDensityVisMesh.position.z = -2.0
 				scene.add(RGBDensityVisMesh);
 
-				// let RGBVisMesh = new THREE.Object3D();
+				let CIExyYVisMesh = makeVis('CIExyYVertexShader', 'CIExyYFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
+				CIExyYVisMesh.position.x = 0;
+				CIExyYVisMesh.position.y = 1;
+				scene.add(CIExyYVisMesh);
 
+				let CIExyYDensityVisMesh = makeVis('CIExyYDensityVertexShader', 'CIExyYDensityFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
+				CIExyYDensityVisMesh.position.x = 0;
+				CIExyYDensityVisMesh.position.y = -1;
+				scene.add(CIExyYDensityVisMesh);
 
-				// var colorSpaceMaterial = new THREE.ShaderMaterial({
-				// 	vertexShader: document.getElementById('RGBVertexShader').textContent,
-				// 	fragmentShader: document.getElementById('RGBFragmentShader').textContent,
-				// 	// blending: THREE.MultiplicativeBlending,
-				// 	depthTest: true,
-				// 	transparent: true,
-				// 	uniforms: {
-				// 		tex: { value: videoTexture },
-				// 	}
-				// });
+				let CIELabVisMesh = makeVis('CIELabVertexShader', 'CIELabFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
+				CIELabVisMesh.position.x = 1;
+				CIELabVisMesh.position.y = -1;
+				scene.add(CIELabVisMesh);
 
-				// points = new THREE.Points(pointsGeometry, colorSpaceMaterial);
-				// RGBVisMesh.add(points);
-
-				// var gridHelper = new THREE.GridHelper(1, 10);
-				// gridHelper.position.y = -0.5;
-				// RGBVisMesh.add(gridHelper);
-
-				// var axesHelper = new THREE.AxesHelper(1);
-				// axesHelper.position.set(-0.5, -0.5, -0.5)
-				// RGBVisMesh.add(axesHelper);
-
-				// var shadowSpaceMaterial = new THREE.ShaderMaterial({
-				// 	vertexShader: document.getElementById('RGBShadowVertexShader').textContent,
-				// 	fragmentShader: document.getElementById('RGBShadowFragmentShader').textContent,
-				// 	blending: THREE.NormalBlending,
-				// 	depthTest: true,
-				// 	transparent: true,
-
-				// 	uniforms: {
-				// 		tex: { value: videoTexture },
-				// 	}
-				// });
-				// let shadowPoints = new THREE.Points(pointsGeometry, shadowSpaceMaterial);
-				// RGBVisMesh.add(shadowPoints);
-
-				// var RGBVisMeshBox = boundingBox.clone();
-				// RGBVisMeshBox.material.depthTest = true;
-				// RGBVisMeshBox.material.opacity = 0.5;
-				// RGBVisMeshBox.material.linewidth = 10;
-				// RGBVisMeshBox.material.transparent = true;
-				// RGBVisMeshBox.add(RGBVisMesh);
-				// scene.add(RGBVisMeshBox);
-
-				// RGBVisMeshBox.position.x = 1;
-				// RGBVisMeshBox.position.y = 1.5;
-				// RGBVisMeshBox.position.z = -2.0
-
-				// const RGBVisMeshEntity = world.createEntity();
-				// RGBVisMeshEntity.addComponent(Intersectable);
-				// RGBVisMeshEntity.addComponent(Object3D, { object: RGBVisMeshBox });
-				// RGBVisMeshEntity.addComponent(Draggable);
-
-				// {
-				// 	let RGBDensityVisMesh = new THREE.Object3D();
-
-				// 	var colourDensitySpaceMaterial = new THREE.ShaderMaterial({
-				// 		vertexShader: document.getElementById('RGBDensityVertexShader').textContent,
-				// 		fragmentShader: document.getElementById('RGBDensityFragmentShader').textContent,
-				// 		// blending: THREE.AdditiveBlending,
-				// 		depthTest: true,
-				// 		transparent: true,
-
-				// 		uniforms: {
-				// 			tex: { value: videoTexture },
-				// 		}
-				// 	});
-				// 	let pointsDensity = new THREE.Points(geometry, colourDensitySpaceMaterial);
-				// 	RGBDensityVisMesh.add(pointsDensity);
-				// 	let shadowPoints2 = shadowPoints.clone();
-				// 	RGBDensityVisMesh.add(shadowPoints2);
-
-				// 	RGBDensityVisMesh.add(gridHelper.clone());
-				// 	RGBDensityVisMesh.add(axesHelper.clone());
-				// 	RGBDensityVisMesh.add(boundingBox.clone());
-
-				// 	RGBDensityVisMesh.position.x = -1;
-				// 	RGBDensityVisMesh.position.y = 1.5;
-				// 	RGBDensityVisMesh.position.z = -2.0
-
-				// 	scene.add(RGBDensityVisMesh);
-
-				// 	const RGBDensityVisMeshEntity = world.createEntity();
-				// 	RGBDensityVisMeshEntity.addComponent(Intersectable);
-				// 	RGBDensityVisMeshEntity.addComponent(Object3D, { object: RGBDensityVisMesh });
-				// 	RGBDensityVisMeshEntity.addComponent(Draggable);
-				// }
-
-				// {
-				// 	let CIExyYVisMesh = new THREE.Object3D();
-
-				// 	var CIExyYSpaceMaterial = new THREE.ShaderMaterial({
-				// 		vertexShader: document.getElementById('CIExyYVertexShader').textContent,
-				// 		fragmentShader: document.getElementById('CIExyYFragmentShader').textContent,
-				// 		// blending: THREE.AdditiveBlending,
-				// 		depthTest: true,
-				// 		transparent: true,
-
-				// 		uniforms: {
-				// 			tex: { value: videoTexture },
-				// 		}
-				// 	});
-
-				// 	let pointsCIExyY = new THREE.Points(geometry, CIExyYSpaceMaterial);
-				// 	CIExyYVisMesh.add(pointsCIExyY);
-
-
-				// 	var shadowSpaceMaterial2 = new THREE.ShaderMaterial({
-				// 		vertexShader: document.getElementById('CIExyYShadowVertexShader').textContent,
-				// 		fragmentShader: document.getElementById('CIExyYShadowFragmentShader').textContent,
-				// 		blending: THREE.NormalBlending,
-				// 		depthTest: true,
-				// 		transparent: true,
-
-				// 		uniforms: {
-				// 			tex: { value: videoTexture },
-				// 		}
-				// 	});
-				// 	let shadowPoints3 = new THREE.Points(geometry, shadowSpaceMaterial2);
-				// 	CIExyYVisMesh.add(shadowPoints3);
-
-				// 	CIExyYVisMesh.add(gridHelper.clone());
-				// 	CIExyYVisMesh.add(axesHelper.clone());
-				// 	CIExyYVisMesh.add(line.clone());
-
-				// 	CIExyYVisMesh.position.x = 0;
-				// 	CIExyYVisMesh.position.y = 1;
-
-				// 	scene.add(CIExyYVisMesh);
-
-				// 	{ // CIEXYy Density
-				// 		let CIExyYDensityVisMesh = new THREE.Object3D();
-
-				// 		var CIExyYDensitySpaceMaterial = new THREE.ShaderMaterial({
-				// 			vertexShader: document.getElementById('CIExyYDensityVertexShader').textContent,
-				// 			fragmentShader: document.getElementById('CIExyYDensityFragmentShader').textContent,
-				// 			// blending: THREE.AdditiveBlending,
-				// 			depthTest: true,
-				// 			transparent: true,
-
-				// 			uniforms: {
-				// 				tex: { value: videoTexture },
-				// 			}
-				// 		});
-
-				// 		let pointsCIExyYDensity = new THREE.Points(geometry, CIExyYDensitySpaceMaterial);
-				// 		CIExyYDensityVisMesh.add(pointsCIExyYDensity);
-
-
-				// 		CIExyYDensityVisMesh.add(shadowPoints3.clone());
-
-				// 		CIExyYDensityVisMesh.add(gridHelper.clone());
-				// 		CIExyYDensityVisMesh.add(axesHelper.clone());
-				// 		CIExyYDensityVisMesh.add(line.clone());
-
-				// 		CIExyYDensityVisMesh.position.x = 0;
-				// 		CIExyYDensityVisMesh.position.y = -1;
-
-				// 		scene.add(CIExyYDensityVisMesh);
-				// 	}
-				// }
-
-				// { // CIE LAB
-				// 	let CIELabVisMesh = new THREE.Object3D();
-
-				// 	var CIELabSpaceMaterial = new THREE.ShaderMaterial({
-				// 		vertexShader: document.getElementById('CIELabVertexShader').textContent,
-				// 		fragmentShader: document.getElementById('CIELabFragmentShader').textContent,
-				// 		// blending: THREE.AdditiveBlending,
-				// 		depthTest: true,
-				// 		transparent: true,
-
-				// 		uniforms: {
-				// 			tex: { value: videoTexture },
-				// 		}
-				// 	});
-
-				// 	let pointsCIELab = new THREE.Points(geometry, CIELabSpaceMaterial);
-				// 	CIELabVisMesh.add(pointsCIELab);
-
-
-				// 	var shadowSpaceMaterial2 = new THREE.ShaderMaterial({
-				// 		vertexShader: document.getElementById('CIELabShadowVertexShader').textContent,
-				// 		fragmentShader: document.getElementById('CIELabShadowFragmentShader').textContent,
-				// 		blending: THREE.NormalBlending,
-				// 		depthTest: true,
-				// 		transparent: true,
-
-				// 		uniforms: {
-				// 			tex: { value: videoTexture },
-				// 		}
-				// 	});
-				// 	let shadowPoints3 = new THREE.Points(geometry, shadowSpaceMaterial2);
-				// 	CIELabVisMesh.add(shadowPoints3);
-
-				// 	CIELabVisMesh.add(gridHelper.clone());
-				// 	CIELabVisMesh.add(axesHelper.clone());
-				// 	CIELabVisMesh.add(line.clone());
-
-				// 	CIELabVisMesh.position.x = -1;
-				// 	CIELabVisMesh.position.y = 1;
-
-				// 	scene.add(CIELabVisMesh);
-
-				// 	{ // CIELab Density
-				// 		let CIELabDensityVisMesh = new THREE.Object3D();
-
-				// 		var CIELabDensitySpaceMaterial = new THREE.ShaderMaterial({
-				// 			vertexShader: document.getElementById('CIELabDensityVertexShader').textContent,
-				// 			fragmentShader: document.getElementById('CIELabDensityFragmentShader').textContent,
-				// 			// blending: THREE.AdditiveBlending,
-				// 			depthTest: true,
-				// 			transparent: true,
-
-				// 			uniforms: {
-				// 				tex: { value: videoTexture },
-				// 			}
-				// 		});
-
-				// 		let pointsCIELabDensity = new THREE.Points(geometry, CIELabDensitySpaceMaterial);
-				// 		CIELabDensityVisMesh.add(pointsCIELabDensity);
-
-
-				// 		CIELabDensityVisMesh.add(shadowPoints3.clone());
-
-				// 		CIELabDensityVisMesh.add(gridHelper.clone());
-				// 		CIELabDensityVisMesh.add(axesHelper.clone());
-				// 		CIELabDensityVisMesh.add(line.clone());
-
-				// 		CIELabDensityVisMesh.position.x = 1;
-				// 		CIELabDensityVisMesh.position.y = 1;
-
-				// 		scene.add(CIELabDensityVisMesh);
-				// 	}
-				// }
+				let CIELabDensityVisMesh = makeVis('CIELabDensityVertexShader', 'CIELabDensityFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
+				CIELabDensityVisMesh.position.x = -1;
+				CIELabDensityVisMesh.position.y = -1;
+				scene.add(CIELabDensityVisMesh);
 
 
 
@@ -1456,8 +1235,6 @@
 			// requestAnimationFrame(animate);
 
 
-			controls.update(0.5);
-
 			renderer.setAnimationLoop(render);
 
 
@@ -1469,6 +1246,8 @@
 		function render() {
 			if (typeof imageProcessing !== "undefined")
 				IVprocess(imageProcessing, renderer);
+			controls.update(0.5);
+
 			const delta = clock.getDelta();
 			const elapsedTime = clock.elapsedTime;
 			renderer.xr.updateCamera(camera);
