@@ -462,6 +462,7 @@
 		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 		import { FlyControls } from 'three/addons/controls/FlyControls.js';
 		import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+		import { VRButton } from 'three/addons/webxr/VRButton.js';
 		// import WEBGL from "three/addons/capabilities/WebGL.js";
 
 		import Stats from 'three/addons/libs/stats.module.js';
@@ -521,6 +522,10 @@
 			const loader = new THREE.TextureLoader();
 
 			window.addEventListener('resize', onWindowResize);
+
+			// VR AR Content
+			document.body.appendChild(VRButton.createButton(renderer));
+			renderer.xr.enabled = true;
 
 			function IVprocess(imageProcessing, renderer) {
 				renderer.setRenderTarget(imageProcessing.rtt);
@@ -896,7 +901,9 @@
 		}
 
 		function animate() {
-			requestAnimationFrame(animate);
+			// requestAnimationFrame(animate);
+
+
 			controls.update(0.5);
 
 			render();
@@ -908,6 +915,8 @@
 				IVprocess(imageProcessing, renderer);
 			renderer.render(scene, camera);
 		}
+
+		renderer.setAnimationLoop(animate);
 
 
 	</script>
