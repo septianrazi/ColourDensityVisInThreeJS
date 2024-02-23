@@ -20,26 +20,26 @@
 		<script type="x-shader/x-vertex" id="RGBVertexShader">
 			uniform sampler2D tex;
 			varying vec3 color;
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
-	
+
 				vec4 mvPosition = modelViewMatrix* vec4(color-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="RGBFragmentShader">
 			varying vec3 color;
-	
+
 			void main() {
 				float l = length( gl_PointCoord - vec2( 0.5, 0.5 ));
 				if ( l > 0.475 ) discard;
-	
+
 				gl_FragColor = vec4( color, 1.0 );
 			}
 		</script>
@@ -47,29 +47,29 @@
 		<script type="x-shader/x-vertex" id="RGBShadowVertexShader">
 			uniform sampler2D tex;
 			varying vec3 color;
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
 				color.g = 0.0;
-	
+
 				vec4 mvPosition = modelViewMatrix* vec4(color-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 3.0;
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="RGBShadowFragmentShader">
 			varying vec3 color;
-	
+
 			void main() {
 				float l = length( gl_PointCoord - vec2( 0.5, 0.5 ));
 				if ( l > 0.475 ) discard;
-	
+
 				vec3 newcolor = vec3(0.2,0.2,0.2);
-	
+
 				gl_FragColor = vec4( newcolor, 0.05);
 			}
 		</script>
@@ -77,23 +77,23 @@
 		<script type="x-shader/x-vertex" id="RGBDensityVertexShader">
 			uniform sampler2D tex;
 			varying vec3 color;
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
-				
-	
+
+
 				vec4 mvPosition = modelViewMatrix* vec4(color-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="RGBDensityFragmentShader">
 			varying vec3 color;
-	
+
 			void main() {
 				float alpha = 0.3;
 				vec3 ditheredColor = color * (1.0 / 15.0) - 0.5;
@@ -109,9 +109,9 @@
 		<script type="x-shader/x-vertex" id="CIExyYVertexShader">
 			uniform sampler2D tex;
 			varying vec3 color;
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
 
 				const mat3 rgbToXyz = mat3(
@@ -131,22 +131,22 @@
 
 				 vec3 XYyPos = vec3(x, Y, y);
 				//vec3 XYyPos = //vec3(x, Y, y)/1.5;
-	
+
 				vec4 mvPosition = modelViewMatrix* vec4(XYyPos-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="CIExyYFragmentShader">
 			varying vec3 color;
-	
+
 			void main() {
 				float l = length( gl_PointCoord - vec2( 0.5, 0.5 ));
 				if ( l > 0.475 ) discard;
-	
+
 				gl_FragColor = vec4( color, 1.0 );
 			}
 		</script>
@@ -154,9 +154,9 @@
 		<script type="x-shader/x-vertex" id="CIExyYDensityVertexShader">
 			uniform sampler2D tex;
 			varying vec3 color;
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
 
 				const mat3 rgbToXyz = mat3(
@@ -176,18 +176,18 @@
 
 				 vec3 XYyPos = vec3(x, Y, y);
 				//vec3 XYyPos = //vec3(x, Y, y)/1.5;
-	
+
 				vec4 mvPosition = modelViewMatrix* vec4(XYyPos-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="CIExyYDensityFragmentShader">
 			varying vec3 color;
-	
+
 			void main() {
 				float alpha = 0.3;
 				vec3 ditheredColor = color * (1.0 / 15.0) - 0.5;
@@ -197,7 +197,7 @@
 				vec3 finalColor = clamp(newColor, 0.0, 1.0);
 
 				gl_FragColor = vec4( finalColor, alpha);
-	
+
 				//gl_FragColor = vec4( color, 1.0 );
 			}
 		</script>
@@ -205,9 +205,9 @@
 		<script type="x-shader/x-vertex" id="CIExyYShadowVertexShader">
 			uniform sampler2D tex;
 			varying vec3 color;
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
 
 				const mat3 rgbToXyz = mat3(
@@ -227,25 +227,25 @@
 
 				 vec3 XYyPos = vec3(x, 0.0, y);
 				//vec3 XYyPos = //vec3(x, Y, y)/1.5;
-	
+
 				vec4 mvPosition = modelViewMatrix* vec4(XYyPos-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 3.0;
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="CIExyYShadowFragmentShader">
 			varying vec3 color;
-	
-			void main() {	
+
+			void main() {
 				vec3 newcolor = vec3(0.2,0.2,0.2);
-	
+
 				gl_FragColor = vec4( newcolor, 0.05);
 			}
 		</script>
-		<!-- 
+		<!--
 		uniform sampler2D tex;
 		varying vec3 color;
 		vec3 normalizeCIELAB(vec3 labColor) {
@@ -282,9 +282,9 @@
 				float kappa = 903.3;
 				return t > epsilon ? pow(t, 1.0 / 3.0) : (kappa * t + 16.0) / 116.0;
 			}
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
 
 				const mat3 rgbToXyz = mat3(
@@ -310,18 +310,18 @@
 				float bnorm = (b + 128.0) / 256.0;
 
 				vec3 pos = vec3(Lnorm, anorm, bnorm);
-	
+
 				vec4 mvPosition = modelViewMatrix * vec4(pos-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="CIELabFragmentShader">
 			varying vec3 color;
-	
+
 			void main() {
 				gl_FragColor = vec4( color, 1.0 );
 			}
@@ -336,9 +336,9 @@
 				float kappa = 903.3;
 				return t > epsilon ? pow(t, 1.0 / 3.0) : (kappa * t + 16.0) / 116.0;
 			}
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
 
 				const mat3 rgbToXyz = mat3(
@@ -364,18 +364,18 @@
 				float bnorm = (b + 128.0) / 256.0;
 
 				vec3 pos = vec3(Lnorm, anorm, bnorm);
-	
+
 				vec4 mvPosition = modelViewMatrix * vec4(pos-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="CIELabDensityFragmentShader">
 			varying vec3 color;
-	
+
 			void main() {
 				float alpha = 0.3;
 				vec3 ditheredColor = color * (1.0 / 15.0) - 0.5;
@@ -385,7 +385,7 @@
 				vec3 finalColor = clamp(newColor, 0.0, 1.0);
 
 				gl_FragColor = vec4( finalColor, alpha);
-	
+
 				//gl_FragColor = vec4( color, 1.0 );
 			}
 		</script>
@@ -399,9 +399,9 @@
 				float kappa = 903.3;
 				return t > epsilon ? pow(t, 1.0 / 3.0) : (kappa * t + 16.0) / 116.0;
 			}
-	
+
 			void main() {
-	
+
 				color = texture2D ( tex, position.xy ).rgb;
 
 				const mat3 rgbToXyz = mat3(
@@ -427,21 +427,21 @@
 				float bnorm = (b + 128.0) / 256.0;
 
 				vec3 pos = vec3(Lnorm, 0.0, bnorm);
-	
+
 				vec4 mvPosition = modelViewMatrix * vec4(pos-vec3(.5,.5,.5), 1);
-	
+
 				gl_PointSize = 0.015 * ( 300.0 / - mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
-	
+
 			}
 		</script>
 
 		<script type="x-shader/x-fragment" id="CIELabShadowFragmentShader">
 			varying vec3 color;
-	
-			void main() {	
+
+			void main() {
 				vec3 newcolor = vec3(0.2,0.2,0.2);
-	
+
 				gl_FragColor = vec4( newcolor, 0.5);
 			}
 		</script>
@@ -466,7 +466,7 @@
 
 		import Stats from 'three/addons/libs/stats.module.js';
 
-		// AR 
+		// AR
 		import { XRButton } from 'three/addons/webxr/XRButton.js';
 		import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 		import { OculusHandModel } from 'three/addons/webxr/OculusHandModel.js';
@@ -606,12 +606,15 @@
 		class Scalable extends Component { }
 
 		Scalable.schema = {
-			// Scalable states: [detached, to-be-scaled, scaling, to-be-detached]
+			// Scalable states: [detached, to-be-scaled, scaled, to-be-detached]
 
 			state: { type: Types.String, default: 'none' },
 			originalParent: { type: Types.Ref, default: null },
 			attachedPointer: { type: Types.Ref, default: null },
-			attachedPointer2: { type: Types.Ref, default: null }
+			attachedPointer2: { type: Types.Ref, default: null },
+			initialHandDistance: { type: Types.Number, default: 0 },
+			initialScale: { type: Types.Number, default: 0 },
+			currentHandDistance: { type: Types.Number, default: 0 }
 		};
 
 		class ScalableSystem extends System {
@@ -631,15 +634,33 @@
 					switch (scalable.state) {
 
 						case 'to-be-attached':
-							scalable.attachedPointer.children[0].attach(object);
+							console.log('to-be-attached')
+							if (scalable.attachedPointer2) {
+								scalable.attachedPointer2.children[0].attach(object);
+							} else {
+								scalable.attachedPointer.children[0].attach(object);
+							}
 							scalable.state = 'attached';
 							break;
 						case 'to-be-detached':
+							console.log('to-be-detached')
+
 							scalable.originalParent.attach(object);
 							scalable.state = 'detached';
 							break;
+						case 'to-be-scaled':
+							console.log('to-be-scaled')
+
+							scalable.attachedPointer2.children[0].attach(object);
+							scalable.state = 'scaled';
+							break;
+						case 'scaled':
+
+							const newScale = scalable.initialScale * (scalable.currentHandDistance / scalable.initialHandDistance);
+							object.scale.setScalar(newScale);
+							break;
 						default:
-							object.scale.set(1, 1, 1);
+						// object.scale.set(1, 1, 1);
 
 					}
 
@@ -655,8 +676,6 @@
 			}
 		};
 
-
-
 		class Intersectable extends TagComponent { }
 
 		class HandRaySystem extends System {
@@ -664,8 +683,19 @@
 			init(attributes) {
 
 				this.handPointers = attributes.handPointers;
+				this.mostRecentScalable = null;
 
 			}
+
+			getDistance(intersections) {
+				console.log('getDistanceENter');
+				var hp1 = this.handPointers[0].joints['index-finger-tip'];
+				var hp2 = this.handPointers[1].joints['index-finger-tip'];
+				let distance = hp1.position.distanceTo(hp2.position);
+				console.log('getDistance:', distance);
+				return distance;
+			}
+
 
 			execute( /*delta, time*/) {
 
@@ -717,28 +747,23 @@
 							if (hp.isPinched()) {
 
 								if (!hp.isAttached() && draggable.state != 'attached') {
-
 									draggable.state = 'to-be-attached';
 									draggable.attachedPointer = hp;
 									hp.setAttached(true);
-
-								} else { // When pinching on another one
-									draggable.state = 'to-be-scaled';
-									draggable.attachedPointer2 = hp;
-									object.scale(1.5, 1.5, 1.5)
-									hp.setAttached(true);
 								}
+
 
 							} else {
 
+								// remove a hand from the object
 								if (hp.isAttached() && draggable.state == 'attached') {
-
-									console.log('hello');
 									draggable.state = 'to-be-detached';
 									draggable.attachedPointer = null;
 									hp.setAttached(false);
 
 								}
+
+
 
 							}
 
@@ -747,35 +772,74 @@
 						if (intersectingEntity.hasComponent(Scalable)) {
 
 							const scalable = intersectingEntity.getMutableComponent(Scalable);
+							this.mostRecentScalable = scalable;
 							const object = intersectingEntity.getComponent(Object3D).object;
 							// object.scale.set(1.1, 1.1, 1.1);
-
-							if (this.handPointers.every(hp => hp.isAttached())) {
-								// Both hp are attached to the object
-								console.log('Both hp are attached to the object');
-							} else {
-								// At least one hp is not attached to the object
-								console.log('Not all hp are attached to the object');
-							}
 							if (hp.isPinched()) {
 
 								if (!hp.isAttached() && scalable.state != 'attached') {
+									console.log('1 hands attached');
 
 									scalable.state = 'to-be-attached';
 									scalable.attachedPointer = hp;
 									hp.setAttached(true);
 
 								}
+								else if (!hp.isAttached() && (scalable.state == 'attached' || scalable.state == 'to-be-attached')) {
+									// When pinching with both hands
+									scalable.state = 'to-be-scaled';
+									scalable.attachedPointer2 = hp;
 
+									var pointerWorldPos = new THREE.Vector3(); // Create a new vector to hold the world position
+									this.handPointers[1].cursorObject.getWorldPosition(pointerWorldPos);
+
+									var pointerWorldPos2 = new THREE.Vector3(); // Create a new vector to hold the world position
+									this.handPointers[0].cursorObject.getWorldPosition(pointerWorldPos2);
+
+									let distance = (pointerWorldPos2.distanceTo(pointerWorldPos))
+									scalable.initialHandDistance = distance;
+									scalable.currentHandDistance = distance;
+
+									scalable.initialScale = object.scale.x;
+									console.log('2 hands attached, dist:', scalable.initialHandDistance);
+
+									hp.setAttached(true);
+								}
+
+								else if (hp.isAttached() && scalable.state == 'scaled') {
+									var pointerWorldPos = new THREE.Vector3(); // Create a new vector to hold the world position
+									this.handPointers[1].cursorObject.getWorldPosition(pointerWorldPos);
+
+									var pointerWorldPos2 = new THREE.Vector3(); // Create a new vector to hold the world position
+									this.handPointers[0].cursorObject.getWorldPosition(pointerWorldPos2);
+
+									scalable.currentHandDistance = (pointerWorldPos2.distanceTo(pointerWorldPos))
+								}
+
+								// MAKE SCALING CONDITION AS WELL
 							} else {
 
 								if (hp.isAttached() && scalable.state == 'attached') {
 
-									console.log('hello');
+									console.log('1 hands removed, no more');
 									scalable.state = 'to-be-detached';
 									scalable.attachedPointer = null;
+									scalable.attachedPointer2 = null;
 									hp.setAttached(false);
 
+								}
+
+								// remove a hand from the object when another hand is attached
+								if (hp.isAttached() && scalable.state == 'scaled') {
+
+									console.log('1 hand removed, another still');
+									scalable.state = 'to-be-attached';
+									if (scalable.attachedPointer == hp) {
+										scalable.attachedPointer = null;
+									} else {
+										scalable.attachedPointer2 = null;
+									}
+									hp.setAttached(false);
 								}
 
 							}
@@ -786,7 +850,24 @@
 
 						hp.setCursor(1.5);
 
+						if (hp.isAttached() && !hp.isPinched()) {
+
+							console.log("IN!!")
+
+							let scalable = this.mostRecentScalable
+
+							if (scalable.attachedPointer == hp) {
+								scalable.state = 'to-be-detached';
+								scalable.attachedPointer = null;
+								scalable.attachedPointer2 = null;
+								this.handPointers[0].setAttached(false);
+								this.handPointers[1].setAttached(false);
+
+							}
+						}
+
 					}
+
 
 				});
 
@@ -938,6 +1019,7 @@
 
 		const world = new World();
 		const clock = new THREE.Clock();
+		let hand1, hand2, handPointer1, handPointer2;
 
 		init();
 		animate();
@@ -998,9 +1080,9 @@
 			controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
 			scene.add(controllerGrip1);
 
-			const hand1 = renderer.xr.getHand(0);
+			hand1 = renderer.xr.getHand(0);
 			hand1.add(new OculusHandModel(hand1));
-			const handPointer1 = new OculusHandPointerModel(hand1, controller1);
+			handPointer1 = new OculusHandPointerModel(hand1, controller1);
 			hand1.add(handPointer1);
 			scene.add(hand1);
 
@@ -1009,9 +1091,9 @@
 			controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
 			scene.add(controllerGrip2);
 
-			const hand2 = renderer.xr.getHand(1);
+			hand2 = renderer.xr.getHand(1);
 			hand2.add(new OculusHandModel(hand2));
-			const handPointer2 = new OculusHandPointerModel(hand2, controller2);
+			handPointer2 = new OculusHandPointerModel(hand2, controller2);
 			hand2.add(handPointer2);
 			scene.add(hand2);
 
@@ -1081,7 +1163,7 @@
 				videoEntity.addComponent(Intersectable);
 				// entity.addComponent(Randomizable);
 				videoEntity.addComponent(Object3D, { object: plan_ori });
-				videoEntity.addComponent(Draggable);
+				// videoEntity.addComponent(Draggable);
 				videoEntity.addComponent(Scalable);
 
 
@@ -1165,6 +1247,7 @@
 					thisVisMesh.scale.set(0.5, 0.5, 0.5);
 
 					var thisVisMeshBox = boundingBox.clone();
+					// thisVisMeshBox.scale.set(0.5, 0.5, 0.5);
 					// thisVisMeshBox.scale.x = 0.1;
 					// thisVisMeshBox.material.depthTest = true;
 					// thisVisMeshBox.material.opacity = 0.5;
@@ -1177,7 +1260,7 @@
 					const thisVisMeshEntity = world.createEntity();
 					thisVisMeshEntity.addComponent(Intersectable);
 					thisVisMeshEntity.addComponent(Object3D, { object: thisVisMeshBox });
-					thisVisMeshEntity.addComponent(Draggable);
+					// thisVisMeshEntity.addComponent(Draggable);
 					thisVisMeshEntity.addComponent(Scalable);
 
 					return thisVisMeshBox;
