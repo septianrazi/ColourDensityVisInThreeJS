@@ -503,40 +503,97 @@
 		class Button extends Component { }
 
 		Button.schema = {
-			// button states: [none, hovered, pressed]
-			currState: { type: Types.String, default: 'none' },
-			prevState: { type: Types.String, default: 'none' },
+			// button states: [resting, pressed, fully_pressed, recovering]
+			currState: { type: Types.String, default: 'resting' },
+			prevState: { type: Types.String, default: 'resting' },
+			pressSound: { type: Types.Ref, default: null },
+			releaseSound: { type: Types.Ref, default: null },
+			restingY: { type: Types.Number, default: null },
+			surfaceY: { type: Types.Number, default: null },
+			recoverySpeed: { type: Types.Number, default: 0.4 },
+			fullPressDistance: { type: Types.Number, default: null },
 			action: { type: Types.Ref, default: () => { } }
 		};
 
 		class ButtonSystem extends System {
 
+			init(attributes) {
+
+				this.renderer = attributes.renderer;
+				this.soundAdded = false;
+
+			}
+
 			execute( /*delta, time*/) {
+
+				let buttonPressSound, buttonReleaseSound;
+				if (this.renderer.xr.getSession() && !this.soundAdded) {
+
+					const xrCamera = this.renderer.xr.getCamera();
+
+					const listener = new THREE.AudioListener();
+					xrCamera.add(listener);
+
+					// create a global audio source
+					buttonPressSound = new THREE.Audio(listener);
+					buttonReleaseSound = new THREE.Audio(listener);
+
+					// load a sound and set it as the Audio object's buffer
+					const audioLoader = new THREE.AudioLoader();
+					audioLoader.load('sounds/button-press.ogg', function (buffer) {
+
+						buttonPressSound.setBuffer(buffer);
+
+					});
+					audioLoader.load('sounds/button-release.ogg', function (buffer) {
+
+						buttonReleaseSound.setBuffer(buffer);
+
+					});
+					this.soundAdded = true;
+
+				}
 
 				this.queries.buttons.results.forEach(entity => {
 
 					const button = entity.getMutableComponent(Button);
 					const buttonMesh = entity.getComponent(Object3D).object;
-					if (button.currState == 'none') {
+					// populate restingY
+					if (button.restingY == null) {
 
-						buttonMesh.scale.set(1, 1, 1);
-
-					} else {
-
-						buttonMesh.scale.set(1.1, 1.1, 1.1);
+						button.restingY = buttonMesh.position.y;
 
 					}
 
-					if (button.currState == 'pressed' && button.prevState != 'pressed') {
+					if (buttonPressSound) {
 
+						button.pressSound = buttonPressSound;
+
+					}
+
+					if (buttonReleaseSound) {
+
+						button.releaseSound = buttonReleaseSound;
+
+					}
+
+					if (button.currState == 'fully_pressed' && button.prevState != 'fully_pressed') {
+
+						if (button.pressSound) button.pressSound.play();
 						button.action();
 
 					}
 
+					if (button.currState == 'recovering' && button.prevState != 'recovering') {
+
+						if (button.releaseSound) button.releaseSound.play();
+
+					}
+
 					// preserve prevState, clear currState
-					// HandRaySystem will update currState
+					// FingerInputSystem will update currState
 					button.prevState = button.currState;
-					button.currState = 'none';
+					button.currState = 'resting';
 
 				});
 
@@ -547,6 +604,78 @@
 		ButtonSystem.queries = {
 			buttons: {
 				components: [Button]
+			}
+		};
+
+		class Pressable extends TagComponent { }
+
+		class FingerInputSystem extends System {
+
+			init(attributes) {
+
+				this.hands = attributes.hands;
+
+			}
+
+			execute(delta/*, time*/) {
+
+				this.queries.pressable.results.forEach(entity => {
+
+					const button = entity.getMutableComponent(Button);
+					const object = entity.getComponent(Object3D).object;
+					const pressingDistances = [];
+					this.hands.forEach(hand => {
+
+						if (hand && hand.intersectBoxObject(object)) {
+
+							const pressingPosition = hand.getPointerPosition();
+							pressingDistances.push(button.surfaceY - object.worldToLocal(pressingPosition).y);
+
+						}
+
+					});
+					if (pressingDistances.length == 0) { // not pressed this frame
+
+						if (object.position.y < button.restingY) {
+
+							object.position.y += button.recoverySpeed * delta;
+							button.currState = 'recovering';
+
+						} else {
+
+							object.position.y = button.restingY;
+							button.currState = 'resting';
+
+						}
+
+					} else {
+
+						button.currState = 'pressed';
+						const pressingDistance = Math.max(pressingDistances);
+						if (pressingDistance > 0) {
+
+							object.position.y -= pressingDistance;
+
+						}
+
+						if (object.position.y <= button.restingY - button.fullPressDistance) {
+
+							button.currState = 'fully_pressed';
+							object.position.y = button.restingY - button.fullPressDistance;
+
+						}
+
+					}
+
+				});
+
+			}
+
+		}
+
+		FingerInputSystem.queries = {
+			pressable: {
+				components: [Pressable]
 			}
 		};
 
@@ -774,7 +903,6 @@
 							const scalable = intersectingEntity.getMutableComponent(Scalable);
 							this.mostRecentScalable = scalable;
 							const object = intersectingEntity.getComponent(Object3D).object;
-							// object.scale.set(1.1, 1.1, 1.1);
 							if (hp.isPinched()) {
 
 								if (!hp.isAttached() && scalable.state != 'attached') {
@@ -841,19 +969,13 @@
 									}
 									hp.setAttached(false);
 								}
-
 							}
-
 						}
 
 					} else {
-
 						hp.setCursor(1.5);
-
+						// remove all hands from object if scaling procedure moves out of bounds
 						if (hp.isAttached() && !hp.isPinched()) {
-
-							console.log("IN!!")
-
 							let scalable = this.mostRecentScalable
 
 							if (scalable.attachedPointer == hp) {
@@ -865,10 +987,7 @@
 
 							}
 						}
-
 					}
-
-
 				});
 
 			}
@@ -1020,9 +1139,22 @@
 		const world = new World();
 		const clock = new THREE.Clock();
 		let hand1, hand2, handPointer1, handPointer2;
-
+		let RGBVisMesh, RGBDensityVisMesh, CIExyYVisMesh, CIExyYDensityVisMesh, CIELabVisMesh, CIELabDensityVisMesh;
+		let visObject;
 		init();
 		animate();
+
+
+		function makeButtonMesh(x, y, z, color) {
+
+			const geometry = new THREE.BoxGeometry(x, y, z);
+			const material = new THREE.MeshBasicMaterial({ color: color });
+			const buttonMesh = new THREE.Mesh(geometry, material);
+			buttonMesh.castShadow = true;
+			buttonMesh.receiveShadow = true;
+			return buttonMesh;
+
+		}
 
 		function init() {
 			// if (WEBGL.isWebGL2Available() === false) {
@@ -1083,6 +1215,8 @@
 			hand1 = renderer.xr.getHand(0);
 			hand1.add(new OculusHandModel(hand1));
 			handPointer1 = new OculusHandPointerModel(hand1, controller1);
+			const handModel1 = new OculusHandModel(hand1);
+			hand1.add(handModel1);
 			hand1.add(handPointer1);
 			scene.add(hand1);
 
@@ -1094,6 +1228,8 @@
 			hand2 = renderer.xr.getHand(1);
 			hand2.add(new OculusHandModel(hand2));
 			handPointer2 = new OculusHandPointerModel(hand2, controller2);
+			const handModel2 = new OculusHandModel(hand2);
+			hand2.add(handModel2);
 			hand2.add(handPointer2);
 			scene.add(hand2);
 
@@ -1102,28 +1238,6 @@
 				renderer.render(imageProcessing.scene, imageProcessing.orthoCamera);
 				renderer.setRenderTarget(null);
 			}
-
-			// WORLD
-			world
-				.registerComponent(Object3D)
-				.registerComponent(Button)
-				.registerComponent(Intersectable)
-				.registerComponent(HandsInstructionText)
-				.registerComponent(OffsetFromCamera)
-				.registerComponent(NeedCalibration)
-				.registerComponent(Randomizable)
-				.registerComponent(Draggable)
-				.registerComponent(Scalable);
-
-			world
-				.registerSystem(RandomizerSystem)
-				.registerSystem(InstructionSystem, { controllers: [controllerGrip1, controllerGrip2] })
-				.registerSystem(CalibrationSystem, { renderer: renderer, camera: camera })
-				.registerSystem(ButtonSystem)
-				.registerSystem(DraggableSystem)
-				.registerSystem(ScalableSystem)
-				.registerSystem(HandRaySystem, { handPointers: [handPointer1, handPointer2] });
-
 
 			// VIDEO AND THE ASSOCIATED TEXTURE
 			var video, videoTexture;
@@ -1173,7 +1287,6 @@
 				// POINT CLOUD ------
 
 				//GLOBAL
-
 				var boundingBoxGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 				// var wireframe = new THREE.EdgesGeometry(boundingBoxGeo);
 				var boundingBox = new THREE.Mesh(boundingBoxGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.1, depthTest: false }));
@@ -1235,11 +1348,7 @@
 					let shadowPoints = new THREE.Points(pointsGeometry, shadowSpaceMaterial);
 					points.add(shadowPoints)
 
-					// points.scale.set(0.7, 0.7, 0.7);
-					// points.position.set(0, 0, 0)
 					thisVisMesh.add(points);
-
-
 
 					thisVisMesh.add(gridHelper.clone());
 					thisVisMesh.add(axesHelper.clone());
@@ -1247,15 +1356,8 @@
 					thisVisMesh.scale.set(0.5, 0.5, 0.5);
 
 					var thisVisMeshBox = boundingBox.clone();
-					// thisVisMeshBox.scale.set(0.5, 0.5, 0.5);
-					// thisVisMeshBox.scale.x = 0.1;
-					// thisVisMeshBox.material.depthTest = true;
-					// thisVisMeshBox.material.opacity = 0.5;
-					// thisVisMeshBox.material.linewidth = 10;
-					// thisVisMeshBox.material.transparent = true;
 
 					thisVisMeshBox.add(thisVisMesh);
-					// thisVisMeshBox.position.y = 0.5;
 
 					const thisVisMeshEntity = world.createEntity();
 					thisVisMeshEntity.addComponent(Intersectable);
@@ -1266,117 +1368,284 @@
 					return thisVisMeshBox;
 				}
 
+				visObject = new THREE.Object3D();
 				// MESHES FOR EACH VIS
-				// let RGBVisMesh = makeVis('RGBVertexShader', 'RGBFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
-				// RGBVisMesh.position.x = 1;
-				// RGBVisMesh.position.y = 1.5;
-				// RGBVisMesh.position.z = -2.0
-				// scene.add(RGBVisMesh);
+				RGBVisMesh = makeVis('RGBVertexShader', 'RGBFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
+				RGBVisMesh.position.x = 1;
+				RGBVisMesh.position.y = 2;
+				RGBVisMesh.position.z = -2.0
+				visObject.add(RGBVisMesh);
+				RGBVisMesh.visible = true
 
-				// let RGBDensityVisMesh = makeVis('RGBDensityVertexShader', 'RGBDensityFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
-				// RGBDensityVisMesh.position.x = -1;
-				// RGBDensityVisMesh.position.y = 1.5;
-				// RGBDensityVisMesh.position.z = -2.0
-				// scene.add(RGBDensityVisMesh);
 
-				let CIExyYVisMesh = makeVis('CIExyYVertexShader', 'CIExyYFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
+				RGBDensityVisMesh = makeVis('RGBDensityVertexShader', 'RGBDensityFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
+				RGBDensityVisMesh.position.x = -1;
+				RGBDensityVisMesh.position.y = 2;
+				RGBDensityVisMesh.position.z = -2.0
+				visObject.add(RGBDensityVisMesh);
+				RGBDensityVisMesh.visible = false
+
+
+				CIExyYVisMesh = makeVis('CIExyYVertexShader', 'CIExyYFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
 				CIExyYVisMesh.position.x = 1;
 				CIExyYVisMesh.position.y = 1.5;
 				CIExyYVisMesh.position.z = -2.0
-				// CIExyYVisMesh.scale.set(0.5, 0.5, 0.5);
-				scene.add(CIExyYVisMesh);
+				visObject.add(CIExyYVisMesh);
+				CIExyYVisMesh.visible = false
 
-				// let CIExyYDensityVisMesh = makeVis('CIExyYDensityVertexShader', 'CIExyYDensityFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
-				// CIExyYDensityVisMesh.position.x = -1;
-				// CIExyYDensityVisMesh.position.y = 1.5;
-				// scene.add(CIExyYDensityVisMesh);
+				CIExyYDensityVisMesh = makeVis('CIExyYDensityVertexShader', 'CIExyYDensityFragmentShader', 'CIExyYShadowVertexShader', 'CIExyYShadowFragmentShader');
+				CIExyYDensityVisMesh.position.x = -1;
+				CIExyYDensityVisMesh.position.y = 1.5;
+				CIExyYDensityVisMesh.position.z = -2.0
+				visObject.add(CIExyYDensityVisMesh);
+				CIExyYDensityVisMesh.visible = false
 
-				// let CIELabVisMesh = makeVis('CIELabVertexShader', 'CIELabFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
-				// CIELabVisMesh.position.x = 1;
-				// CIELabVisMesh.position.y = -1;
-				// scene.add(CIELabVisMesh);
+				CIELabVisMesh = makeVis('CIELabVertexShader', 'CIELabFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
+				CIELabVisMesh.position.x = 1;
+				CIELabVisMesh.position.y = 1;
+				CIELabVisMesh.position.z = -2.0
+				visObject.add(CIELabVisMesh);
+				CIELabVisMesh.visible = false
 
-				// let CIELabDensityVisMesh = makeVis('CIELabDensityVertexShader', 'CIELabDensityFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
-				// CIELabDensityVisMesh.position.x = -1;
-				// CIELabDensityVisMesh.position.y = -1;
-				// scene.add(CIELabDensityVisMesh);
+				CIELabDensityVisMesh = makeVis('CIELabDensityVertexShader', 'CIELabDensityFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
+				CIELabDensityVisMesh.position.x = -1;
+				CIELabDensityVisMesh.position.y = 1;
+				CIELabDensityVisMesh.position.z = -2.0
+				visObject.add(CIELabDensityVisMesh);
+				CIELabDensityVisMesh.visible = false
 
-
-
+				scene.add(visObject);
 
 				video.play();
 			};
 
-			const menuGeometry = new THREE.PlaneGeometry(0.24, 0.5);
-			const menuMaterial = new THREE.MeshPhongMaterial({
-				opacity: 0,
-				transparent: true,
-			});
-			const menuMesh = new THREE.Mesh(menuGeometry, menuMaterial);
-			menuMesh.position.set(0.4, 1, - 1);
-			menuMesh.rotation.y = - Math.PI / 12;
-			scene.add(menuMesh);
+			// BUTTONS!
 
-			const resetButton = makeButtonMesh(0.2, 0.1, 0.01, 0x355c7d);
-			const resetButtonText = createText('reset', 0.06);
-			resetButton.add(resetButtonText);
-			resetButtonText.position.set(0, 0, 0.0051);
-			resetButton.position.set(0, - 0.06, 0);
-			menuMesh.add(resetButton);
+			const consoleGeometry = new THREE.BoxGeometry(0.5, 0.12, 0.15);
+			const consoleMaterial = new THREE.MeshPhongMaterial({ color: 0x595959 });
+			const consoleMesh = new THREE.Mesh(consoleGeometry, consoleMaterial);
+			consoleMesh.position.set(0, 1, - 0.3);
+			consoleMesh.castShadow = true;
+			consoleMesh.receiveShadow = true;
+			scene.add(consoleMesh);
+			consoleMesh.scale.set(0.5, 0.5, 0.5);
 
-			const exitButton = makeButtonMesh(0.2, 0.1, 0.01, 0xff0000);
-			const exitButtonText = createText('exit', 0.06);
-			exitButton.add(exitButtonText);
-			exitButtonText.position.set(0, 0, 0.0051);
-			exitButton.position.set(0, - 0.18, 0);
-			menuMesh.add(exitButton);
+			const rgbButton = makeButtonMesh(0.08, 0.1, 0.08, 0xffd3b5);
+			rgbButton.position.set(- 0.15, 0.04, 0);
+			const rgbButtonText = createText('RGB', 0.03);
+			rgbButton.add(rgbButtonText);
+			rgbButtonText.rotation.x = - Math.PI / 2;
+			rgbButtonText.position.set(0, 0.051, 0);
+			consoleMesh.add(rgbButton);
+
+			const xyYButton = makeButtonMesh(0.08, 0.1, 0.08, 0xe84a5f);
+			xyYButton.position.set(-0.05, 0.04, 0);
+			const xyYButtonText = createText('xyY', 0.03);
+			xyYButton.add(xyYButtonText);
+			xyYButtonText.rotation.x = - Math.PI / 2;
+			xyYButtonText.position.set(0, 0.051, 0);
+			consoleMesh.add(xyYButton);
+
+			const labButton = makeButtonMesh(0.08, 0.1, 0.08, 0x355c7d);
+			const labButtonText = createText('Lab', 0.03);
+			labButton.add(labButtonText);
+			labButtonText.rotation.x = - Math.PI / 2;
+			labButtonText.position.set(0, 0.051, 0);
+			labButton.position.set(0.05, 0.04, 0);
+			consoleMesh.add(labButton);
+
+			const densityButton = makeButtonMesh(0.08, 0.1, 0.08, 0xff0000);
+			const densityButtonText = createText('Density', 0.03);
+			densityButton.add(densityButtonText);
+			densityButtonText.rotation.x = - Math.PI / 2;
+			densityButtonText.position.set(0, 0.051, 0);
+			densityButton.position.set(0.15, 0.04, 0);
+			consoleMesh.add(densityButton);
 
 
+			// WORLD
+			world
+				.registerComponent(Object3D)
+				.registerComponent(Button)
+				.registerComponent(Pressable)
+				.registerComponent(Intersectable)
+				.registerComponent(HandsInstructionText)
+				.registerComponent(OffsetFromCamera)
+				.registerComponent(NeedCalibration)
+				.registerComponent(Randomizable)
+				.registerComponent(Draggable)
+				.registerComponent(Scalable);
 
-			const menuEntity = world.createEntity();
-			menuEntity.addComponent(Intersectable);
-			menuEntity.addComponent(OffsetFromCamera, { x: 0.4, y: 0, z: - 1 });
-			menuEntity.addComponent(NeedCalibration);
-			menuEntity.addComponent(Object3D, { object: menuMesh });
+			world
+				.registerSystem(RandomizerSystem)
+				.registerSystem(InstructionSystem, { controllers: [controllerGrip1, controllerGrip2] })
+				.registerSystem(CalibrationSystem, { renderer: renderer, camera: camera })
+				.registerSystem(ButtonSystem, { renderer: renderer, camera: camera })
+				.registerSystem(DraggableSystem)
+				.registerSystem(ScalableSystem)
+				.registerSystem(FingerInputSystem, { hands: [handModel1, handModel2] })
+				.registerSystem(HandRaySystem, { handPointers: [handPointer1, handPointer2] });
+
+
+			let onDensity = false;
+
+			const csEntity = world.createEntity();
+			csEntity.addComponent(OffsetFromCamera, { x: 0, y: - 0.4, z: - 0.3 });
+			csEntity.addComponent(NeedCalibration);
+			csEntity.addComponent(Intersectable);
+			csEntity.addComponent(Draggable)
+			csEntity.addComponent(Object3D, { object: consoleMesh });
+
+			const obEntity = world.createEntity();
+			obEntity.addComponent(Pressable);
+			obEntity.addComponent(Intersectable);
+			obEntity.addComponent(Object3D, { object: rgbButton });
+			const obAction = function () {
+
+				if (onDensity) {
+					RGBDensityVisMesh.visible = !RGBDensityVisMesh.visible;
+				} else {
+					RGBVisMesh.visible = !RGBVisMesh.visible;
+				}
+			};
+
+
+			obEntity.addComponent(Button, { action: obAction, surfaceY: 0.05, fullPressDistance: 0.02 });
+
+			const pbEntity = world.createEntity();
+			pbEntity.addComponent(Pressable);
+			pbEntity.addComponent(Intersectable);
+			pbEntity.addComponent(Object3D, { object: xyYButton });
+			const pbAction = function () {
+
+				if (!onDensity) {
+					CIExyYVisMesh.visible = !CIExyYVisMesh.visible;
+				} else {
+					CIExyYDensityVisMesh.visible = !CIExyYDensityVisMesh.visible;
+				}
+			};
+
+			pbEntity.addComponent(Button, { action: pbAction, surfaceY: 0.05, fullPressDistance: 0.02 });
 
 			const rbEntity = world.createEntity();
+			rbEntity.addComponent(Pressable);
 			rbEntity.addComponent(Intersectable);
-			rbEntity.addComponent(Object3D, { object: resetButton });
+			rbEntity.addComponent(Object3D, { object: labButton });
 			const rbAction = function () {
 
-				world.getSystem(RandomizerSystem).needRandomizing = true;
-
+				if (!onDensity) {
+					CIELabVisMesh.visible = !CIELabVisMesh.visible;
+				} else {
+					CIELabDensityVisMesh.visible = !CIELabDensityVisMesh.visible;
+				}
 			};
 
-			rbEntity.addComponent(Button, { action: rbAction });
+			rbEntity.addComponent(Button, { action: rbAction, surfaceY: 0.05, fullPressDistance: 0.02 });
 
 			const ebEntity = world.createEntity();
+			ebEntity.addComponent(Pressable);
 			ebEntity.addComponent(Intersectable);
-			ebEntity.addComponent(Object3D, { object: exitButton });
+			ebEntity.addComponent(Object3D, { object: densityButton });
 			const ebAction = function () {
 
-				exitText.visible = true;
-				setTimeout(function () {
+				onDensity = !onDensity;
 
-					exitText.visible = false; renderer.xr.getSession().end();
-
-				}, 2000);
+				if (onDensity) {
+					if (RGBVisMesh.visible) {
+						RGBVisMesh.visible = false;
+						RGBDensityVisMesh.visible = true;
+					}
+					if (CIExyYVisMesh.visible) {
+						CIExyYVisMesh.visible = false;
+						CIExyYDensityVisMesh.visible = true;
+					}
+					if (CIELabVisMesh.visible) {
+						CIELabVisMesh.visible = false;
+						CIELabDensityVisMesh.visible = true;
+					}
+				} else {
+					if (RGBDensityVisMesh.visible) {
+						RGBVisMesh.visible = true;
+						RGBDensityVisMesh.visible = false;
+					}
+					if (CIExyYDensityVisMesh.visible) {
+						CIExyYVisMesh.visible = true;
+						CIExyYDensityVisMesh.visible = false;
+					}
+					if (CIELabDensityVisMesh.visible) {
+						CIELabVisMesh.visible = true;
+						CIELabDensityVisMesh.visible = false;
+					}
+				}
 
 			};
 
-			ebEntity.addComponent(Button, { action: ebAction });
+			ebEntity.addComponent(Button, { action: ebAction, surfaceY: 0.05, recoverySpeed: 0.2, fullPressDistance: 0.03 });
+
+			// const menuGeometry = new THREE.PlaneGeometry(0.24, 0.5);
+			// const menuMaterial = new THREE.MeshBasicMaterial({
+			// 	opacity: 0,
+			// 	transparent: true,
+			// });
+			// const menuMesh = new THREE.Mesh(menuGeometry, menuMaterial);
+			// menuMesh.position.set(0.4, 1, - 1);
+			// menuMesh.rotation.y = - Math.PI / 12;
+			// scene.add(menuMesh);
+
+			// const resetButton = makeButtonMesh(0.2, 0.1, 0.01, 0x355c7d);
+			// const resetButtonText = createText('reset', 0.06);
+			// resetButton.add(resetButtonText);
+			// resetButtonText.position.set(0, 0, 0.0051);
+			// resetButton.position.set(0, - 0.06, 0);
+			// menuMesh.add(resetButton);
+
+			// const exitButton = makeButtonMesh(0.2, 0.1, 0.01, 0xff0000);
+			// const exitButtonText = createText('exit', 0.06);
+			// exitButton.add(exitButtonText);
+			// exitButtonText.position.set(0, 0, 0.0051);
+			// exitButton.position.set(0, - 0.18, 0);
+			// menuMesh.add(exitButton);
+
+
+			// const menuEntity = world.createEntity();
+			// menuEntity.addComponent(Intersectable);
+			// menuEntity.addComponent(OffsetFromCamera, { x: 0.4, y: 0, z: - 1 });
+			// menuEntity.addComponent(NeedCalibration);
+			// menuEntity.addComponent(Object3D, { object: menuMesh });
+
+			// hand2.add(menuMesh);
+
+
+			// const rbEntity = world.createEntity();
+			// rbEntity.addComponent(Intersectable);
+			// rbEntity.addComponent(Object3D, { object: resetButton });
+			// const rbAction = function () {
+
+			// 	world.getSystem(RandomizerSystem).needRandomizing = true;
+
+			// };
+
+			// rbEntity.addComponent(Button, { action: rbAction });
+
+			// const ebEntity = world.createEntity();
+			// ebEntity.addComponent(Intersectable);
+			// ebEntity.addComponent(Object3D, { object: exitButton });
+			// const ebAction = function () {
+
+			// 	exitText.visible = true;
+			// 	setTimeout(function () {
+
+			// 		exitText.visible = false; renderer.xr.getSession().end();
+
+			// 	}, 2000);
+
+			// };
+
+			// ebEntity.addComponent(Button, { action: ebAction });
+
 
 			window.addEventListener('resize', onWindowResize);
 
-
-		}
-
-		function makeButtonMesh(x, y, z, color) {
-
-			const geometry = new THREE.BoxGeometry(x, y, z);
-			const material = new THREE.MeshPhongMaterial({ color: color });
-			const buttonMesh = new THREE.Mesh(geometry, material);
-			return buttonMesh;
 
 		}
 
