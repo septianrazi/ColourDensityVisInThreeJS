@@ -95,7 +95,7 @@
 			varying vec3 color;
 
 			void main() {
-				float alpha = 0.3;
+				float alpha = 0.9;
 				vec3 ditheredColor = color * (1.0 / 15.0) - 0.5;
 
 				// vec3 newcolor = color * alpha;
@@ -189,7 +189,7 @@
 			varying vec3 color;
 
 			void main() {
-				float alpha = 0.3;
+				float alpha = 0.9;
 				vec3 ditheredColor = color * (1.0 / 15.0) - 0.5;
 
 				// vec3 newcolor = color * alpha;
@@ -245,32 +245,8 @@
 				gl_FragColor = vec4( newcolor, 0.05);
 			}
 		</script>
-		<!--
-		uniform sampler2D tex;
-		varying vec3 color;
-		vec3 normalizeCIELAB(vec3 labColor) {
-		float L = labColor.x / 100.0;
-		float a = (labColor.y + 128.0) / 256.0;
-		float b = (labColor.z + 128.0) / 256.0;
-		return vec3(L, 0.0, b);
-		}
-		void main() {
-		vec3 rgb_color = texture2D (tex, position.xy).rgb;
-		float X = rgb_color.r * 0.4124564 + rgb_color.g * 0.3575761 + rgb_color.b * 0.1804375;
-		float Y = rgb_color.r * 0.2126729 + rgb_color.g * 0.7151522 + rgb_color.b * 0.0721750;
-		float Z = rgb_color.r * 0.0193339 + rgb_color.g * 0.1191920 + rgb_color.b * 0.9503041;
-		float epsilon = 0.008856;
-		float kappa = 903.3;
-		float Xr = 0.950456;
-		float Yr = 1.0;
-		float Zr = 1.088754;
-		float xr = X / Xr;
-		float yr = Y / Yr;
-		float zr = Z / Zr;
 
-		float fx = xr > epsilon ? pow(xr, 1.0 / 3.0) : (kappa * xr + 16.0) / 116.0;
-		float fy = yr
-		} -->
+
 
 		<!-- CIE LAB -->
 		<script type="x-shader/x-vertex" id="CIELabVertexShader">
@@ -377,7 +353,7 @@
 			varying vec3 color;
 
 			void main() {
-				float alpha = 0.3;
+				float alpha = 0.9;
 				vec3 ditheredColor = color * (1.0 / 15.0) - 0.5;
 
 				// vec3 newcolor = color * alpha;
@@ -386,7 +362,6 @@
 
 				gl_FragColor = vec4( finalColor, alpha);
 
-				//gl_FragColor = vec4( color, 1.0 );
 			}
 		</script>
 
@@ -1262,11 +1237,11 @@
 					1,
 					video.videoHeight / video.videoWidth
 				);
-				var material2 = new THREE.MeshBasicMaterial({
+				imageProcessingMaterial = new THREE.MeshBasicMaterial({
 					map: videoTexture,
 					side: THREE.DoubleSide,
 				});
-				plan_ori = new THREE.Mesh(geometry2, material2);
+				plan_ori = new THREE.Mesh(geometry2, imageProcessingMaterial);
 				plan_ori.position.y = 1.5;
 				plan_ori.position.z = -2.5;
 
@@ -1322,10 +1297,15 @@
 
 					const thisVisMesh = new THREE.Object3D();
 
+					let blending = THREE.NormalBlending;
+					if (vertexShader.includes("Density"))
+						blending = THREE.AdditiveBlending;
+
+
 					var colorSpaceMaterial = new THREE.ShaderMaterial({
 						vertexShader: document.getElementById(vertexShader).textContent,
 						fragmentShader: document.getElementById(fragmentShader).textContent,
-						// blending: THREE.MultiplicativeBlending,
+						blending: blending,
 						depthTest: true,
 						transparent: true,
 						uniforms: {
@@ -1372,7 +1352,7 @@
 				// MESHES FOR EACH VIS
 				RGBVisMesh = makeVis('RGBVertexShader', 'RGBFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
 				RGBVisMesh.position.x = 1;
-				RGBVisMesh.position.y = 2;
+				RGBVisMesh.position.y = 2.5;
 				RGBVisMesh.position.z = -2.0
 				visObject.add(RGBVisMesh);
 				RGBVisMesh.visible = true
@@ -1380,7 +1360,7 @@
 
 				RGBDensityVisMesh = makeVis('RGBDensityVertexShader', 'RGBDensityFragmentShader', 'RGBShadowVertexShader', 'RGBShadowFragmentShader');
 				RGBDensityVisMesh.position.x = -1;
-				RGBDensityVisMesh.position.y = 2;
+				RGBDensityVisMesh.position.y = 2.5;
 				RGBDensityVisMesh.position.z = -2.0
 				visObject.add(RGBDensityVisMesh);
 				RGBDensityVisMesh.visible = false
@@ -1402,19 +1382,22 @@
 
 				CIELabVisMesh = makeVis('CIELabVertexShader', 'CIELabFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
 				CIELabVisMesh.position.x = 1;
-				CIELabVisMesh.position.y = 1;
+				CIELabVisMesh.position.y = 0.5;
 				CIELabVisMesh.position.z = -2.0
 				visObject.add(CIELabVisMesh);
 				CIELabVisMesh.visible = false
 
 				CIELabDensityVisMesh = makeVis('CIELabDensityVertexShader', 'CIELabDensityFragmentShader', 'CIELabShadowVertexShader', 'CIELabShadowFragmentShader');
 				CIELabDensityVisMesh.position.x = -1;
-				CIELabDensityVisMesh.position.y = 1;
+				CIELabDensityVisMesh.position.y = 0.5;
 				CIELabDensityVisMesh.position.z = -2.0
 				visObject.add(CIELabDensityVisMesh);
 				CIELabDensityVisMesh.visible = false
 
 				scene.add(visObject);
+
+				addGUI(imageProcessingMaterial, video);
+
 
 				video.play();
 			};
@@ -1455,7 +1438,7 @@
 			consoleMesh.add(labButton);
 
 			const densityButton = makeButtonMesh(0.08, 0.1, 0.08, 0xff0000);
-			const densityButtonText = createText('Density', 0.03);
+			const densityButtonText = createText('Density', 0.02);
 			densityButton.add(densityButtonText);
 			densityButtonText.rotation.x = - Math.PI / 2;
 			densityButtonText.position.set(0, 0.051, 0);
@@ -1582,67 +1565,6 @@
 
 			ebEntity.addComponent(Button, { action: ebAction, surfaceY: 0.05, recoverySpeed: 0.2, fullPressDistance: 0.03 });
 
-			// const menuGeometry = new THREE.PlaneGeometry(0.24, 0.5);
-			// const menuMaterial = new THREE.MeshBasicMaterial({
-			// 	opacity: 0,
-			// 	transparent: true,
-			// });
-			// const menuMesh = new THREE.Mesh(menuGeometry, menuMaterial);
-			// menuMesh.position.set(0.4, 1, - 1);
-			// menuMesh.rotation.y = - Math.PI / 12;
-			// scene.add(menuMesh);
-
-			// const resetButton = makeButtonMesh(0.2, 0.1, 0.01, 0x355c7d);
-			// const resetButtonText = createText('reset', 0.06);
-			// resetButton.add(resetButtonText);
-			// resetButtonText.position.set(0, 0, 0.0051);
-			// resetButton.position.set(0, - 0.06, 0);
-			// menuMesh.add(resetButton);
-
-			// const exitButton = makeButtonMesh(0.2, 0.1, 0.01, 0xff0000);
-			// const exitButtonText = createText('exit', 0.06);
-			// exitButton.add(exitButtonText);
-			// exitButtonText.position.set(0, 0, 0.0051);
-			// exitButton.position.set(0, - 0.18, 0);
-			// menuMesh.add(exitButton);
-
-
-			// const menuEntity = world.createEntity();
-			// menuEntity.addComponent(Intersectable);
-			// menuEntity.addComponent(OffsetFromCamera, { x: 0.4, y: 0, z: - 1 });
-			// menuEntity.addComponent(NeedCalibration);
-			// menuEntity.addComponent(Object3D, { object: menuMesh });
-
-			// hand2.add(menuMesh);
-
-
-			// const rbEntity = world.createEntity();
-			// rbEntity.addComponent(Intersectable);
-			// rbEntity.addComponent(Object3D, { object: resetButton });
-			// const rbAction = function () {
-
-			// 	world.getSystem(RandomizerSystem).needRandomizing = true;
-
-			// };
-
-			// rbEntity.addComponent(Button, { action: rbAction });
-
-			// const ebEntity = world.createEntity();
-			// ebEntity.addComponent(Intersectable);
-			// ebEntity.addComponent(Object3D, { object: exitButton });
-			// const ebAction = function () {
-
-			// 	exitText.visible = true;
-			// 	setTimeout(function () {
-
-			// 		exitText.visible = false; renderer.xr.getSession().end();
-
-			// 	}, 2000);
-
-			// };
-
-			// ebEntity.addComponent(Button, { action: ebAction });
-
 
 			window.addEventListener('resize', onWindowResize);
 
@@ -1650,43 +1572,58 @@
 		}
 
 
-		function addGUI() {
-			// {//gui
-			// 	var pausePlayObj = {
-			// 		pausePlay: function () {
-			// 			if (!video.paused) {
-			// 				console.log("pause");
-			// 				video.pause();
-			// 			} else {
-			// 				console.log("play");
-			// 				video.play();
-			// 			}
-			// 		},
-			// 		add10sec: function () {
-			// 			video.currentTime = video.currentTime + 10;
-			// 			console.log(video.currentTime);
-			// 		},
-			// 	};
+		function addGUI(imageProcessingMaterial, video) {
 
-			// 	gui = new GUI();
-			// 	gui
-			// 		.add(imageProcessingMaterial.uniforms.colorScaleR, "value", 0, 1)
-			// 		.name("Red");
-			// 	gui
-			// 		.add(imageProcessingMaterial.uniforms.colorScaleG, "value", 0, 1)
-			// 		.name("Green");
-			// 	gui
-			// 		.add(imageProcessingMaterial.uniforms.colorScaleB, "value", 0, 1)
-			// 		.name("Blue");
-			// 	gui
-			// 		.add(imageProcessingMaterial.uniforms.sizeDiv2, "value", 1, 21)
-			// 		.name("sizeDiv2");
-			// 	gui
-			// 		.add(imageProcessingMaterial.uniforms.invert, "value")
-			// 		.name("Invert");
-			// 	gui.add(pausePlayObj, "pausePlay").name("Pause/play video");
-			// 	gui.add(pausePlayObj, "add10sec").name("Add 10 seconds");
-			// }
+			var pausePlayObj = {
+				pausePlay: function () {
+					if (!video.paused) {
+						console.log("pause");
+						video.pause();
+					} else {
+						console.log("play");
+						video.play();
+					}
+				},
+				add10sec: function () {
+					video.currentTime = video.currentTime + 10;
+					console.log(video.currentTime);
+				},
+			};
+
+			gui = new GUI();
+			gui.add(pausePlayObj, "pausePlay").name("Pause/play video");
+			gui.add(pausePlayObj, "add10sec").name("Add 10 seconds");
+
+			var colourFolder = gui.addFolder("Colour Visualisations");
+			let params = {
+				RGBVisMesh: true,
+				RGBDensityVisMesh: false,
+				CIExyYVisMesh: false,
+				CIExyYDensityVisMesh: false,
+				CIELabVisMesh: false,
+				CIELabDensityVisMesh: false,
+			}
+
+			colourFolder.add(params, "RGBVisMesh").name("RGB").onChange(function (value) {
+				RGBVisMesh.visible = value;
+			});
+			colourFolder.add(params, "RGBDensityVisMesh").name("RGB Density").onChange(function (value) {
+				RGBDensityVisMesh.visible = value;
+			});
+			colourFolder.add(params, "CIExyYVisMesh").name("CIExyY").onChange(function (value) {
+				CIExyYVisMesh.visible = value;
+			});
+			colourFolder.add(params, "CIExyYDensityVisMesh").name("CIExyY Density").onChange(function (value) {
+				CIExyYDensityVisMesh.visible = value;
+			});
+			colourFolder.add(params, "CIELabVisMesh").name("CIELab").onChange(function (value) {
+				CIELabVisMesh.visible = value;
+			});
+			colourFolder.add(params, "CIELabDensityVisMesh").name("CIELab Density").onChange(function (value) {
+				CIELabDensityVisMesh.visible = value;
+			});
+
+
 		}
 
 		function onWindowResize() {
